@@ -1,0 +1,136 @@
+import { readMessages, writeMessage } from "./protocol.js";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { callAnswer } from "../tools/answer.js";
+import { TOOL_DEFINITIONS } from "../tools/tool-definitions.js";
+import type { Config } from "../config/defaults.js";
+
+type JsonRpc = {
+  jsonrpc?: "2.0";
+  id?: number | string;
+  method?: string;
+  params?: any;
+  result?: any;
+  error?: any;
+};
+
+const PROTOCOL = "2025-06-18";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+function ts(): string { return new Date().toISOString(); }
+function logInfo(msg: string): void { console.error(`[mcp] ${ts()} INFO ${msg}`); }
+function logError(msg: string): void { console.error(`[mcp] ${ts()} ERROR ${msg}`); }
+function pkgVersion(): string {
+  try {
+    const pkgPath = join(__dirname, "..", "..", "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+    return String(pkg.version || "0.0.0");
+  } catch {
+    return "0.0.0";
+  }
+}
+function debugOn(cfg: Config): boolean {
+  try {
+    const yaml = ((cfg as any)?.server?.debug ? true : false);
+    const ev = (process.env.DEBUG ?? "").toString();
+    const envOn = ev ? (ev === '1' || ev.toLowerCase() === 'true' || ev.length > 0) : false;
+    return yaml || envOn;
+  } catch { return false; }
+}
+
+function sendResult(id: number | string, result: any) {
+  writeMessage({ jsonrpc: "2.0", id, result });
+}
+function sendError(id: number | string, code: number, message: string, data?: any) {
+  writeMessage({ jsonrpc: "2.0", id, error: { code, message, data } });
+}
+
+export function startServer(cfg: Config) {
+  if (debugOn(cfg)) logInfo(`server.start pid=${process.pid}`);
+  // 起動時要約（stderr、MCPのstdoutを汚さない）
+  try {
+    const srv: any = (cfg as any).server || {};
+    const mp: any = (cfg as any).model_profiles?.answer || {};
+    const rq: any = (cfg as any).request || {};
+    const sh = !!srv.show_config_on_start;
+    if (debugOn(cfg) || sh) {
+      logInfo(`config summary: model(answer)=${mp.model ?? '-'} effort=${mp.reasoning_effort ?? '-'} verbosity=${mp.verbosity ?? '-'} timeout_ms=${rq.timeout_ms ?? '-'} retries=${rq.max_retries ?? '-'}`);
+      const pol: any = (cfg as any).policy?.system || {};
+      if (pol?.source === 'file') logInfo(`policy: source=file path=${pol.path ?? ''} merge=${pol.merge ?? 'replace'}`);
+    }
+  } catch {}
+  readMessages(async (raw: any) => {
+    const msg = raw as JsonRpc;
+    if (debugOn(cfg)) {
+      const method = msg?.method || (msg?.result ? "<result>" : msg?.error ? "<error>" : "<unknown>");
+      logInfo(`recv method=${method} id=${String(msg?.id ?? "-")}`);
+    }
+
+    if (msg.method === "initialize" && msg.id !== undefined) {
+      const res = {
+        protocolVersion: PROTOCOL,
+        // Claude Code が initialize.request で capabilities.roots を送ってくるため、
+        // 応答側でも tools と roots を明示して返す（互換性のため空オブジェクトを含める）。
+        capabilities: { tools: {}, roots: {} },
+        serverInfo: { name: "openai-responses-mcp", version: pkgVersion() }
+      };
+      if (debugOn(cfg)) logInfo(`initialize -> ok`);
+      sendResult(msg.id, res);
+      return;
+    }
+
+    if (msg.method === "tools/list" && msg.id !== undefined) {
+      const tools = Object.values(TOOL_DEFINITIONS);
+      if (debugOn(cfg)) logInfo(`tools/list -> ${tools.length} tools`);
+      sendResult(msg.id, { tools });
+      return;
+    }
+
+    if (msg.method === "tools/call" && msg.id !== undefined) {
+      const { name, arguments: args } = (msg.params || {}) as { name?: string; arguments?: any };
+      if (debugOn(cfg)) {
+        try {
+          const keys = Object.keys(args || {});
+          const qlen = typeof (args?.query) === 'string' ? (args.query as string).length : undefined;
+          logInfo(`tools/call name=${name} argsKeys=[${keys.join(',')}] queryLen=${qlen ?? '-'}`);
+        } catch {}
+      }
+      // プロファイル名として直接使用
+      if (name && name in TOOL_DEFINITIONS) {
+        try {
+          const out = await callAnswer(args, cfg, name);  // プロファイル名を渡す
+          if (debugOn(cfg)) logInfo(`tools/call(${name}) -> ok`);
+          sendResult(msg.id, { content: [{ type: "text", text: JSON.stringify(out) }] });
+        } catch (e: any) {
+          const dbg = debugOn(cfg);
+          let status: any = '-';
+          let etype: any = '-';
+          let ename: any = '-';
+          let emsg: string = e?.message || String(e);
+          if (dbg) {
+            try {
+              status = (e && (e.status ?? e.code)) ?? '-';
+              ename = e?.name ?? '-';
+              etype = e?.error?.type ?? '-';
+              emsg = (e?.message ?? String(e)).slice(0, 400);
+              logError(`tools/call(${name}) -> error status=${status} type=${etype} name=${ename} msg="${emsg}"`);
+            } catch {}
+          }
+          const data = dbg
+            ? { message: emsg, status, type: etype, name: ename }
+            : { message: e?.message || String(e) };
+          sendError(msg.id, -32001, "answer failed", data);
+        }
+      } else {
+        if (debugOn(cfg)) logError(`unknown tool: ${name}`);
+        sendError(msg.id, -32601, "Unknown tool");
+      }
+      return;
+    }
+
+    if (msg.id !== undefined) {
+      if (debugOn(cfg)) logError(`unknown method: ${msg.method}`);
+      sendError(msg.id, -32601, "Unknown method");
+    }
+  });
+}

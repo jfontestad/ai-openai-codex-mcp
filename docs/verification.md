@@ -1,0 +1,100 @@
+
+# 検証手順（E2E）— openai-responses-mcp
+
+最終更新: 2025-08-15（Asia/Tokyo, AI確認）  
+このファイルはローカルでの再現・確認手順を示します。出力は **JSON を機械的に検査**できる形を優先し、`jq` での確認例も併記します。
+
+---
+
+## 0. 前提条件
+- Node.js 20 以上（例: v24 系）、npm
+- 依存とビルド（再現性重視）:
+  ```bash
+  npm ci
+  npm run build
+  ```
+- 注意: OpenAI API を実際に呼ぶ検証（任意の一部ステップ）では `OPENAI_API_KEY` が必要です。
+
+---
+
+## 1. サニティチェック（CLI）
+### 1-1 版数とヘルプ
+```bash
+node build/index.js --version
+node build/index.js --help
+```
+
+### 1-2 実効設定（優先順位: CLI > ENV > YAML > TS）
+```bash
+# 素の状態
+node build/index.js --show-config 2> effective.json; cat effective.json | jq '.version, .sources, .effective.model_profiles.answer.model'
+```
+**期待**: `sources.ts_defaults=true` が含まれ、`effective.model_profiles.answer.model` が既定（`gpt-5-mini`）。
+
+---
+
+## 2. MCP stdio スモーク（LDJSON, API鍵不要）
+```bash
+npm run mcp:smoke:ldjson | tee /tmp/mcp-smoke-ldjson.out
+
+# initialize と tools/list の応答が JSON 行で出力されること
+grep -c '"jsonrpc":"2.0"' /tmp/mcp-smoke-ldjson.out
+```
+**期待**: `initialize` と `tools/list` の応答が得られる（OpenAI API 呼び出しは行わない）。
+
+---
+
+## 3. MCP stdio スモーク（Content-Length, 要 OPENAI_API_KEY）
+OpenAI API を実際に呼ぶ最小疎通。`scripts/mcp-smoke.js` は `tools/call(answer)` を送るため鍵が必要です。
+```bash
+export OPENAI_API_KEY="sk-..."
+npm run mcp:smoke | tee /tmp/mcp-smoke.out
+
+# initialize → tools/list → tools/call の3応答が Content-Length 付きで流れること
+grep -c '^Content-Length:' /tmp/mcp-smoke.out
+```
+
+---
+
+## 4. 優先順位の検証（ENV > YAML > TS）
+### 4-1 ENV 上書き
+```bash
+MODEL_ANSWER="gpt-5-mini" node build/index.js --show-config 2> effective.json; cat effective.json | jq '.effective.model_profiles.answer.model'
+```
+**期待**: `"gpt-5-mini"`
+
+### 4-2 YAML の読み込み
+```bash
+cat > /tmp/mcp-config.yaml <<'YAML'
+model_profiles:
+  answer:
+    model: gpt-5-mini
+    reasoning_effort: medium
+    verbosity: medium
+YAML
+
+node build/index.js --show-config --config /tmp/mcp-config.yaml 2> effective.json; cat effective.json | jq '.sources, .effective.model_profiles.answer.model'
+```
+**期待**: `.sources.yaml` が `/tmp/mcp-config.yaml` を指し、`"gpt-5-mini"`。
+
+---
+
+## 5. タイムアウト/リトライ観察（任意, 要 OPENAI_API_KEY）
+API 側の都合により再現しづらい場合がありますが、`OPENAI_API_TIMEOUT` を小さくして Abort → リトライを観察できます。
+```bash
+export OPENAI_API_KEY="sk-..."
+OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
+```
+（ログにリトライ回数が出る構成にしている場合は、その値を確認してください）
+
+---
+
+## 6. 失敗時の切り分け
+- `Missing API key: set OPENAI_API_KEY` → 環境変数未設定
+- `ECONNRESET` / `AbortError` → ネットワーク/タイムアウト
+- `Unknown tool` → `tools/call` の name ミス（`answer` のみ対応）
+
+---
+
+## 7. 成功判定（DoD 準拠）
+- 1・2・4 の各検証が**期待どおり**になれば要件を満たしています。
