@@ -589,10 +589,13 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # 鍵がある場合のみ鍵依存テストを実行するため、ジョブenvにバインド。
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -605,8 +608,6 @@ jobs:
       - run: npm run mcp:smoke:ldjson
       - if: env.OPENAI_API_KEY != ''
         run: npm run mcp:smoke
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```
 
 release.yml（概要）:

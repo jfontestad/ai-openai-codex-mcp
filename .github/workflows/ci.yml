@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,8 +19,5 @@ jobs:
       - run: npm pack --dry-run
       - run: npm run mcp:smoke:ldjson
       - name: Optional smoke with OpenAI
-        if: ${{ secrets.OPENAI_API_KEY != '' }}
+        if: env.OPENAI_API_KEY != ''
         run: npm run mcp:smoke
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
