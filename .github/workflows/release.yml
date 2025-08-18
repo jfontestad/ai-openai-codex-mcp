@@ -18,4 +18,8 @@ jobs:
       - run: npm ci
       - run: npm run build:clean
       - run: npm pack --dry-run
+      - name: Diagnose OIDC availability
+        run: |
+          echo "node=$(node -v) npm=$(npm -v)"
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then echo "OIDC_AVAILABLE=1"; else echo "OIDC_AVAILABLE=0"; fi
       - run: npm publish --provenance --access public
