@@ -566,19 +566,18 @@ server: { transport: stdio, hot_reload: false, log_level: info }
        - 既定: `npm run mcp:smoke:ldjson`（OpenAI鍵不要）
        - 任意: `npm run mcp:smoke`（`OPENAI_API_KEY` を設定した場合のみ実行）
 
-- `release.yml`（タグ push: 自動リリース）
+- `release.yml`（タグ push: 自動リリース — Trusted Publishing を採用）
   - トリガ: `push` with `tags: ["v*"]`
-  - 権限: `permissions: contents: write`（Releaseノート生成用・任意）
+  - 権限: `permissions: { contents: write, id-token: write }`
   - Node: `20.x`
-  - npm 公開設定:
-    - `secrets.NPM_TOKEN` を使用
-    - `actions/setup-node@v4` に `registry-url: https://registry.npmjs.org/`
-    - `npm ci` → `npm run build:clean` → `npm publish --access public`
-  - 任意: `actions/create-release` 等で GitHub Release ノート生成
+  - npm 公開設定（Trusted Publishing / OIDC）:
+    - npmjs 側で当該 GitHub リポジトリを Trusted Publishers に登録（初回のみ）
+    - Actions 側は `npm publish --provenance --access public` を実行（トークン不要）
+  - 任意: GitHub Release ノート生成
 
 ### 11.3 シークレット/環境変数
-- `NPM_TOKEN`（必須・release.yml）: npm publish 用トークン（`automation`権限）。
 - `OPENAI_API_KEY`（任意・ci.yml）: `npm run mcp:smoke` 実行時に必要。未設定の場合は `mcp:smoke:ldjson` のみ実行。
+- Trusted Publishing では `NPM_TOKEN` は不要。npmjs 側で Trusted Publishers を設定する。
 
 ### 11.4 参考 YAML（概要）
 以下は実装の骨子（実装時はこの仕様を忠実に反映し、重複や余分な手順は追加しない）。
@@ -610,14 +609,15 @@ jobs:
         run: npm run mcp:smoke
 ```
 
-release.yml（概要）:
+release.yml（概要 — Trusted Publishing）:
 ```yaml
 name: Release
 on:
   push:
-    tags: [ "v*" ]
+    tags: ["v*"]
 permissions:
   contents: write
+  id-token: write
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -626,13 +626,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org/
           cache: npm
       - run: npm ci
       - run: npm run build:clean
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --provenance --access public
 ```
 
 ### 11.5 成果物と公開ポリシー
@@ -643,7 +640,7 @@ jobs:
 ### 11.6 運用フロー（再掲・確定）
 1) feature/* → Pull Request（`ci.yml` 実行）
 2) `main` にマージ後、`package.json` を semver で bump
-3) `git tag vX.Y.Z && git push --tags`（`release.yml` 実行 → npm publish）
+3) `git tag vX.Y.Z && git push --tags`（`release.yml` 実行 → npm publish（Trusted Publishing））
 4) Actions の成功確認 → README の npx 例で動作確認
 
 注: `repository`/`homepage`/`bugs` の `package.json` 追記は npm ページ表示改善のため推奨だが、実装は別途合意の上で行う。
