@@ -46,4 +46,19 @@
     "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues"
   },
   "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme"
+  ,
+  "keywords": [
+    "openai",
+    "responses-api",
+    "mcp",
+    "model-context-protocol",
+    "stdio",
+    "mcp-server",
+    "typescript",
+    "cli",
+    "web-search",
+    "codex",
+    "claude",
+    "code"
+  ]
 }
