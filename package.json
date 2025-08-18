@@ -38,4 +38,13 @@
     "node": ">=20"
   },
   "license": "MIT"
+  ,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues"
+  },
+  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme"
 }
