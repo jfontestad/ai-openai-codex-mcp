@@ -1,6 +1,6 @@
 {
   "name": "openai-responses-mcp",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Thin MCP server (Responses API core). OpenAI integration + web_search.",
   "type": "module",
   "bin": {
@@ -45,8 +45,7 @@
   "bugs": {
     "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues"
   },
-  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme"
-  ,
+  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme",
   "keywords": [
     "openai",
     "responses-api",
