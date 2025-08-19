@@ -1,6 +1,6 @@
 
 # 正準仕様（Canonical Spec）— `docs/spec.md`
-最終更新: 2025-08-15（Asia/Tokyo, AI確認）  
+最終更新: 2025-08-19（Asia/Tokyo, AI確認）  
 バージョン: **v0.4.x**
 
 本ドキュメントは **openai-responses-mcp** の**唯一の正準仕様**です。  
@@ -9,7 +9,7 @@
 ---
 
 ## 0. 背景・目的
-- Claude Code などの MCP クライアントから、**OpenAI Responses API** を用いた検索付き回答を得るための**薄い**サーバを提供する。
+- Claude Code などの MCP クライアントから、**OpenAI Responses API** を用いた検索付き回答を得るための**軽量な**サーバを提供する。
 - 毎リクエストで `tools: [{"type":"web_search"}]` を**常時許可**し、実際に検索を行うかは**モデル側で自律判断**させる。
 - 返却は**構造化**（本文・`used_search`・`citations[]`・`model` を必須）し、クライアント側での再利用性を高める。
 - 設定で互換モデルへ切替可能（Responses API＋web_search対応モデルに限る）。ポリシー・閾値の変更も設定で柔軟に行える。
@@ -410,7 +410,7 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 - name: `openai-responses-mcp`
 - version: セマンティックバージョニング（現行 `0.4.x`）
 - description: 以下の文言を使用（段階表現「Step N:」は含めない）
-  - `Thin MCP server (Responses API core). OpenAI integration + web_search.`
+  - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
 - type: `module`
 - bin: `{ "openai-responses-mcp": "build/index.js" }`
 - files: `["build","config/config.yaml.example","config/policy.md.example","README.md","LICENSE"]`
@@ -430,7 +430,7 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 {
   "name": "openai-responses-mcp",
   "version": "0.4.1",
-  "description": "Thin MCP server (Responses API core). OpenAI integration + web_search.",
+  "description": "Lightweight MCP server (Responses API core). OpenAI integration + web_search.",
   "type": "module",
   "bin": { "openai-responses-mcp": "build/index.js" },
   "files": [

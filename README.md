@@ -1,5 +1,5 @@
 # openai-responses-mcp
-OpenAI Responses API を推論コアに採用した「薄い」MCPサーバです。  
+OpenAI Responses API を推論コアに採用した軽量な MCP サーバです。  
 `web_search` を常時許可し、実際に検索を行うかはモデルが自律判断します。Claude Code/Claude Desktop 等の MCP クライアントから stdio で利用します。
 
 重要: 仕様の正準は `docs/spec.md` です。詳細はそちらを参照してください。

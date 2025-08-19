@@ -13,7 +13,7 @@ config/config.yaml
 # logs & temp
 *.log
 _debug.log
-_temp/
+_temp_/
 
 # OS/editor
 .DS_Store
