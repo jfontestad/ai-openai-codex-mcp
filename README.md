@@ -1,4 +1,9 @@
 # openai-responses-mcp
+
+<div align="center">
+  <p><a href="./README.en.md">English</a></p>
+</div>
+
 OpenAI Responses API を推論コアに採用した軽量な MCP サーバです。  
 `web_search` を常時許可し、実際に検索を行うかはモデルが自律判断します。Claude Code/Claude Desktop 等の MCP クライアントから stdio で利用します。
 
@@ -7,10 +12,10 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 --
 
 ## Repository Structure
-- `src/`                         : TypeScript ソース（唯一の正準）
+- `src/`                         : TypeScript ソース
 - `scripts/`                     : 検証/補助スクリプト（`mcp-smoke*`, `clean.js` 等）
 - `config/`
-  - `config.yaml.example`        : 設定サンプル（実設定はコミットしない）
+  - `config.yaml.example`        : 設定サンプル
   - `policy.md.example`          : 外部 System Policy のサンプル
 - `docs/`                        : 正準仕様/リファレンス/検証手順
   - `spec.md`                    : 正準仕様
@@ -21,8 +26,6 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 - `package.json`, `package-lock.json` : npm 設定/依存固定
 - `tsconfig.json`                : TypeScript 設定
 - `.gitignore`                   : Git 除外設定
-
-注: `build/` や `node_modules/`、`config/config.yaml`（実運用設定）などは GitHub にはアップロードしません（`.gitignore` 対象）。
 
 --
 
@@ -50,15 +53,11 @@ YAML は後から追加可能です（既定パス: macOS/Linux `~/.config/opena
 --
 
 ## 利用者向け（MCPとして使う）
+MCPクライアントから利用する場合に参考にしてください。
 
-### 1) npx で即実行（推奨）
-```bash
-export OPENAI_API_KEY="sk-..."  # macOS/Linux（PowerShellは $env:OPENAI_API_KEY="sk-..."）
-npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
-```
+### 1) Claude Code への登録例
+- `~/.claude.json` へ以下の項目を追加
 
-### 2) Claude Code への登録例（npx）
-クライアントの設定（UIから開ける `mcpServers`）に次を追加:
 ```json
 {
   "mcpServers": {
@@ -71,10 +70,56 @@ npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/
 }
 ```
 
-### 3) 設定（YAML 任意）
+- `claude code cli` で以下を実行
+
+```sh
+claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- npx openai-responses-mcp@latest --stdio
+```
+
+### 2) OpenAI Codex への登録例
+- `~/.codex/config.toml` へ以下の項目を追加
+
+```toml
+[mcp_servers.openai-responses]
+command = "npx"
+args = ["-y", "openai-responses-mcp@latest", "--stdio"]
+env = { OPENAI_API_KEY = "sk-xxxx" }
+```
+
+### 3) CLAUDE.md や AGENTS.md への指示例
+```markdown
+### 問題解決方針
+
+開発中に問題や実装上の困難に遭遇した場合：
+
+1. **必ず openai-responses MCP に相談すること**  
+   - 相談は最優先かつ必須とする  
+   - 独自判断での実装は絶対に行わない  
+
+2. **質問は必ず英語で行うこと**  
+   - openai-responses MCP への質問はすべて英語で記載する  
+
+3. **代替手法や最新ベストプラクティスの調査**  
+   - openai-responses MCP を活用して解決手段や最新のベストプラクティスを収集する  
+
+4. **複数の解決アプローチを検討すること**  
+   - 一つの方法に即決せず、複数の選択肢を比較検討した上で方針を決定する  
+
+5. **解決策を文書化すること**  
+   - 問題解決後は、再発時に迅速に対応できるよう手順や解決方法を記録しておく  
+```
+
+### 4) npx で即実行
+```bash
+export OPENAI_API_KEY="sk-..." 
+npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
+```
+
+### 5) 設定（YAML 任意）
 既定パス: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`、Windows `%APPDATA%\openai-responses-mcp\config.yaml`
 
 最小例:
+
 ```yaml
 model_profiles:
   answer:
@@ -89,6 +134,7 @@ request:
 サンプル: `config/config.yaml.example`
 
 外部 policy（任意）:
+
 ```yaml
 policy:
   system:
@@ -98,7 +144,7 @@ policy:
 ```
 サンプル: `config/policy.md.example`
 
-### 4) ログとデバッグ
+### 6) ログとデバッグ
 - デバッグON（画面出力）: `--debug` または `DEBUG=1|true`
 - デバッグON（ファイル＋画面ミラー）: `--debug ./_debug.log` または `DEBUG=./_debug.log`
 - デバッグOFF: 最小限の稼働確認ログのみ
@@ -164,3 +210,10 @@ npm publish           # 公開（スコープなし）
 
 ## ライセンス
 MIT
+
+## Notes
+
+<p><a href="https://uchimanajet7.hatenablog.com/entry/2025/08/21/203000
+">openai-responses-mcp 開発メモ - Codex と Claude Code を両方使って作ってみた
+</a></p>
+
