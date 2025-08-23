@@ -9,7 +9,7 @@ A lightweight MCP server that uses the OpenAI Responses API as its inference cor
 
 Important: The canonical specification is `docs/spec.md`. See that file for details.
 
---
+---
 
 ## Repository Structure
 - `src/`                         : TypeScript sources
