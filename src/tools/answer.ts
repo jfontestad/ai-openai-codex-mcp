@@ -104,7 +104,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
 
   // DEBUG ログ: プロファイル・対応機能・送信要約
   // DEBUGは環境変数が非空であれば有効（"1"/"true"/任意のパス）
-  const dv = (process.env.DEBUG_MCP ?? process.env.MCP_DEBUG ?? "").toString().toLowerCase();
+  const dv = (process.env.DEBUG ?? "").toString().toLowerCase();
   const isDebug = dv === '1' || dv === 'true' || dv.length > 0;
   if (isDebug) {
     try {

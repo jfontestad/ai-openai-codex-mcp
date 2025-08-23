@@ -18,7 +18,7 @@
 
 ### 1.2 JSON-RPC 互換
 - **バージョン**：`"jsonrpc":"2.0"`（互換）。
-- **メソッド**：`initialize` / `tools/list` / `tools/call` の3系統を使用。
+- **メソッド**：`initialize` / `tools/list` / `tools/call` / `ping` を使用（`ping` は任意のヘルスチェック）。
 - **ID**：数値/文字列いずれも可。リクエストとレスポンスで一致させる。
 
 ### 1.3 初期化
@@ -26,13 +26,13 @@
 ```http
 Content-Length: 118
 
-{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{}}}
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{}}}
 ```
 **送信（例）**
 ```http
-Content-Length: 168
+Content-Length: 142
 
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2024-11-05","capabilities":{"tools":{},"roots":{}},"serverInfo":{"name":"openai-responses-mcp","version":"<pkg.version>"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"openai-responses-mcp","version":"<pkg.version>"}}}
 ```
 
 ### 1.4 ツール一覧
@@ -70,15 +70,29 @@ Content-Length: 128
 {"jsonrpc":"2.0","id":3,"error":{"code":-32001,"message":"answer: invalid arguments","data":{"reason":"query is required"}}}
 ```
 
-### 1.6 実装注意点
+### 1.6 ping（任意のヘルスチェック）
+**受信（例）**
+```http
+Content-Length: 36
+
+{"jsonrpc":"2.0","id":99,"method":"ping"}
+```
+**送信（例）**
+```http
+Content-Length: 28
+
+{"jsonrpc":"2.0","id":99,"result":{}}
+```
+
+### 1.7 実装注意点
 - **Content-Length は UTF-8 バイト長**で算出（`Buffer.byteLength(json, 'utf8')`）。
 - ストリームは**フラッシュ**されるまでクライアントに届かない。`stdout.write` 直後に `\n` は不要、ヘッダ末尾の `\r\n\r\n` を忘れない。
 - **バックプレッシャ**：Node.js の `stdout.write()` が `false` を返す場合は `drain` 待機。
 - **最大メッセージ長**：制限なしだが、実務では 1～2MB 程度で分割を検討。
 - **並列リクエスト**：ID をキーに同時進行可。順不同応答を許容すること。
 
-### 1.7 ロギング & トラブルシュート
-- **デバッグモード**：`--debug` または `DEBUG_MCP=1` で起動すると、stderr に段階ログを出力（例：`stdin chunk=...` / `headerEnd=...` / `recv method=...` / `send (line|framed) bytes=...` / `send json=...`）。
+### 1.8 ロギング & トラブルシュート
+- **デバッグモード**：`--debug` または `DEBUG=1` で起動すると、stderr に段階ログを出力（例：`stdin chunk=...` / `headerEnd=...` / `recv method=...` / `send (line|framed) bytes=...` / `send json=...`）。
 - **フレーミング崩れの典型**：`Content-Length` ミスマッチ、`\r\n\r\n` 欠落、BOM 混入。行区切りJSONにも自動フォールバック。
 - **検査**：`npm run mcp:smoke` で `initialize → tools/list → tools/call` の 3応答を確認。
 
@@ -87,7 +101,7 @@ Content-Length: 128
 <!-- HTTP（streamable_http）に関する設計案は docs/_drafts/transports-http.md へ退避 -->
 
 ## 3. 互換性ポリシー
-- `protocolVersion` は現行 `2024-11-05`。将来変更時は**後方互換**のため `initialize` でネゴシエート。
+- `protocolVersion` は現行 `2025-06-18`。将来変更時は**後方互換**のため `initialize` でネゴシエート。
 - `tools` のスキーマは **後方互換を前提に追記**（必須フィールドの削除/意味変更は不可）。
 
 ---

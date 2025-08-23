@@ -73,6 +73,19 @@ function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
     const n = Number(env.MAX_CITATIONS);
     if (!Number.isNaN(n) && n >= 1 && n <= 10) copy.policy.max_citations = n;
   }
+  // DEBUG の統一仕様:
+  // - `DEBUG` が "1"/"true" なら server.debug = true
+  // - それ以外の非空文字列なら、server.debug = true かつ server.debug_file に値を格納
+  if (env.DEBUG !== undefined) {
+    const vraw = String(env.DEBUG);
+    const v = vraw.toLowerCase();
+    if (v === '1' || v === 'true') {
+      copy.server.debug = true;
+    } else if (vraw && vraw.length > 0) {
+      copy.server.debug = true;
+      (copy.server as any).debug_file = vraw;
+    }
+  }
   return copy;
 }
 

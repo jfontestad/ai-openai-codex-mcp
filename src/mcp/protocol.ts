@@ -6,9 +6,10 @@ let lineDelimitedMode = false; // Claude互換: 行区切りJSONでやり取り�
 export function enableLineDelimitedMode() { lineDelimitedMode = true; }
 
 function isDebug(): boolean {
-  const v = (process.env.DEBUG_MCP ?? process.env.MCP_DEBUG ?? "").toString();
+  const v = (process.env.DEBUG ?? "").toString();
   if (!v) return false;
   const s = v.toLowerCase();
+  // `DEBUG` は 1/true でON、任意の非空文字列（パス等）でもON
   return s === "1" || s === "true" || s.length > 0;
 }
 

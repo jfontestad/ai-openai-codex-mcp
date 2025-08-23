@@ -105,17 +105,28 @@ async function main() {
     // デバッグ有効化（優先度: CLI > ENV > YAML）
     const yamlDbg = (loaded.effective.server as any)?.debug ? true : false;
     const yamlDbgFile = (loaded.effective.server as any)?.debug_file || null;
-    // CLI
-    let dbgEnabled = !!args.debug;
-    let dbgFile: string | null = args.debugPath ?? null;
-    // ENV（DEBUG）
-    if (!dbgEnabled && process.env.DEBUG && process.env.DEBUG.length > 0) {
-      const v = String(process.env.DEBUG);
-      if (v === '1' || v.toLowerCase() === 'true') dbgEnabled = true; else { dbgEnabled = true; dbgFile = v; }
+
+    // 1) CLI を最優先で反映（仕様：CLI/ENV/YAML 同義）
+    if (args.debug) {
+      loaded.effective.server.debug = true;
+      if (args.debugPath) loaded.effective.server.debug_file = args.debugPath;
+      // ENV も同期（transport層のデバッグ判定で利用するため）
+      process.env.DEBUG = args.debugPath ? args.debugPath : '1';
     }
-    // YAML
-    if (!dbgEnabled && yamlDbg) dbgEnabled = true;
-    if (!dbgFile && yamlDbgFile) dbgFile = yamlDbgFile;
+
+    // 2) ENV（DEBUG）が存在し、CLIで未指定なら反映
+    if (!args.debug && process.env.DEBUG && process.env.DEBUG.length > 0) {
+      const v = String(process.env.DEBUG);
+      loaded.effective.server.debug = true;
+      if (v !== '1' && v.toLowerCase() !== 'true') loaded.effective.server.debug_file = v;
+    }
+
+    // 3) YAML（最後に不足分補完）
+    if (!loaded.effective.server.debug && yamlDbg) loaded.effective.server.debug = true;
+    if (!loaded.effective.server.debug_file && yamlDbgFile) loaded.effective.server.debug_file = yamlDbgFile;
+
+    const dbgEnabled = !!loaded.effective.server.debug;
+    const dbgFile = (loaded.effective.server as any).debug_file || null;
 
     // セットアップ（ファイル指定時はTEEでミラー）
     setupDebugFileSink(dbgEnabled, dbgFile);

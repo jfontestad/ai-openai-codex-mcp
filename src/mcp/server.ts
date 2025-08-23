@@ -69,9 +69,8 @@ export function startServer(cfg: Config) {
     if (msg.method === "initialize" && msg.id !== undefined) {
       const res = {
         protocolVersion: PROTOCOL,
-        // Claude Code が initialize.request で capabilities.roots を送ってくるため、
-        // 応答側でも tools と roots を明示して返す（互換性のため空オブジェクトを含める）。
-        capabilities: { tools: {}, roots: {} },
+        // 本サーバは roots を未実装のため広告しない（tools のみ）
+        capabilities: { tools: {} },
         serverInfo: { name: "openai-responses-mcp", version: pkgVersion() }
       };
       if (debugOn(cfg)) logInfo(`initialize -> ok`);
@@ -124,6 +123,16 @@ export function startServer(cfg: Config) {
       } else {
         if (debugOn(cfg)) logError(`unknown tool: ${name}`);
         sendError(msg.id, -32601, "Unknown tool");
+      }
+      return;
+    }
+
+    // ping（ヘルスチェック）最小実装
+    if (msg.method === "ping") {
+      if (debugOn(cfg)) logInfo(`recv method=ping id=${String(msg?.id ?? '-')}`);
+      if (msg.id !== undefined) {
+        // 空オブジェクトでOK（仕様上は実装依存）。
+        sendResult(msg.id, {});
       }
       return;
     }

@@ -47,6 +47,7 @@
   - `initialize`
   - `tools/list`
   - `tools/call`
+  - `ping`（任意・ヘルスチェック用。空オブジェクトで成功応答）
 
 ### 2.3 初期化（例）
 **受信**
@@ -57,9 +58,9 @@ Content-Length: 118
 ```
 **送信**
 ```http
-Content-Length: 168
+Content-Length: 142
 
-{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{},"roots":{}},"serverInfo":{"name":"openai-responses-mcp","version":"<pkg.version>"}}}
+{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"openai-responses-mcp","version":"<pkg.version>"}}}
 ```
 
 ### 2.4 ツール一覧（例）
@@ -87,6 +88,20 @@ Content-Length: 156
 Content-Length: 204
 
 {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\"answer\":\"...\",\"used_search\":false,\"citations\":[],\"model\":\"gpt-5\"}"}]}}
+```
+
+### 2.6 ping（任意）
+**受信（例）**
+```http
+Content-Length: 36
+
+{"jsonrpc":"2.0","id":99,"method":"ping"}
+```
+**送信（例）**
+```http
+Content-Length: 28
+
+{"jsonrpc":"2.0","id":99,"result":{}}
 ```
 
 ---
@@ -341,7 +356,7 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 - ログに**回答本文やキーをフルで残さない**。必要最小のメタ情報（モデル名/レイテンシ/再試行回数）に限定。
 - プロキシ・私設ゲートウェイ利用は組織方針に従う。
 
-### 8.1 デバッグログ（DEBUG_MCP=1 時のみ）
+### 8.1 デバッグログ（DEBUG=1 または `--debug` 時のみ）
 - 目的：障害時の切り分け（モデル非対応・タイムアウト・429/5xx・不正引数）を、本文や秘匿情報を出さずに特定する。
 - 共通方針：stderr へ出力。API キーや本文、instructions は出力しない。
 - 出力内容（例）：
@@ -353,7 +368,7 @@ server: { transport: stdio, hot_reload: false, log_level: info }
   - 本文は長さのみ（`queryLen`）を記録。`instructions` は出力しない。
   - レスポンスボディは先頭数百文字に丸め、URL/鍵等が含まれないことを前提に表示。疑義がある場合は出力を抑止。
 
-### 8.2 エラー詳細の JSON-RPC 返却（DEBUG_MCP=1 時のみ）
+### 8.2 エラー詳細の JSON-RPC 返却（DEBUG=1 または `--debug` 時のみ）
 - 目的：クライアント UI でサーバ stderr を拾えない場合でも、最小限の切り分け情報を可視化する。
 - `tools/call` が失敗した場合、`error` の `data` に以下を含める：
   - `message`（先頭 400 文字程度に丸め）
