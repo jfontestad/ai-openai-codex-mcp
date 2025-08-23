@@ -9,7 +9,7 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 
 重要: 仕様の正準は `docs/spec.md` です。詳細はそちらを参照してください。
 
---
+---
 
 ## Repository Structure
 - `src/`                         : TypeScript ソース
