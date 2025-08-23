@@ -42,6 +42,19 @@ grep -c '"jsonrpc":"2.0"' /tmp/mcp-smoke-ldjson.out
 ```
 **期待**: `initialize` と `tools/list` の応答が得られる（OpenAI API 呼び出しは行わない）。
 
+### 2-1 追加: ping の確認（API鍵不要・即終了）
+```bash
+npm run mcp:smoke:ping | tee /tmp/mcp-smoke-ping.out
+
+# ping の result が空オブジェクトで返ること
+grep -c '"result":{}' /tmp/mcp-smoke-ping.out
+```
+**期待**: `initialize` 応答の後に `{"jsonrpc":"2.0","id":<n>,"result":{}}` が出力される。
+
+### 2-2 追加: protocol/capabilities の目視確認
+- `protocolVersion` が `2025-06-18` であること
+- `initialize` 応答の `capabilities` は `{"tools":{}}` のみ（`roots` は含まれない）
+
 ---
 
 ## 3. MCP stdio スモーク（Content-Length, 要 OPENAI_API_KEY）

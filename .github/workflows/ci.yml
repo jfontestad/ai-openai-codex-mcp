@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run build:clean
       - run: npm pack --dry-run
+      - run: npm run mcp:smoke:ping
       - run: npm run mcp:smoke:ldjson
       - name: Optional smoke with OpenAI
         if: env.OPENAI_API_KEY != ''

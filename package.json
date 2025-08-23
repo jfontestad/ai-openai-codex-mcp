@@ -22,6 +22,7 @@
     "mcp:stdio": "node build/index.js --stdio",
     "mcp:smoke": "node scripts/mcp-smoke.js",
     "mcp:smoke:ldjson": "node scripts/mcp-smoke-ldjson.js",
+    "mcp:smoke:ping": "node scripts/mcp-smoke-ping.js",
     "mcp:quick": "node scripts/mcp-smoke-quick.js",
     "prepublishOnly": "npm run build"
   },
