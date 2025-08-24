@@ -1,33 +1,37 @@
 name: Release
-
 on:
   push:
     tags:
       - 'v*'
-
 permissions:
   contents: write
   id-token: write
-
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # 理由: npm の公開先レジストリを明示して Runner 既定やキャッシュの影響を排除し、常に npmjs 本番を使うため。
+      # 注意: この指定（registry-url）は削除しないこと（CI 安定化に必須）。
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+          cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      # 理由: provenance 署名付き公開の安定化のため、npm CLI の挙動差/既知不具合を回避する（認証周りの差異を抑制）。
+      # 注意: この行は削除しないこと（CI 安定化・再現性確保のため必須）。
+      - name: Update npm (latest)
+        run: npm install -g npm@latest
 
-      - name: Build (clean)
-        run: npm run build:clean
+      - run: npm ci
+      - run: npm run build:clean
 
-      - name: Publish to npm (Trusted Publishing)
-        run: npm publish --provenance --access public
+      # 理由: 公開前に同梱物を検証し、意図しないファイル混入や欠落を早期検知するため。
+      # 注意: この確認は削除しないこと（公開事故防止）。
+      - run: npm pack --dry-run
 
+      # 理由: Trusted Publishing（OIDC）で provenance 署名つき公開を実施する本番コマンド。
+      # 注意: フラグ（--provenance / --access public）は削除しないこと（公開方式の一貫性維持）。
+      - run: npm publish --provenance --access public
