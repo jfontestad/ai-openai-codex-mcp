@@ -24,7 +24,12 @@ export type CallArgs = {
   tools?: any[];
 };
 
-export async function callResponsesWithRetry(client: OpenAI, cfg: Config, args: CallArgs) {
+export async function callResponsesWithRetry(
+  client: OpenAI,
+  cfg: Config,
+  args: CallArgs,
+  externalSignal?: AbortSignal
+) {
   const timeoutMs = cfg.request.timeout_ms;
   const maxRetries = cfg.request.max_retries;
   let lastError: any;
@@ -32,10 +37,20 @@ export async function callResponsesWithRetry(client: OpenAI, cfg: Config, args: 
   // model_profiles構造に基づくリトライ（フォールバック機能削除）
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
+      // 事前にキャンセル済みなら即中断
+      if (externalSignal?.aborted) {
+        const err = new Error("Aborted before request");
+        (err as any).name = "AbortError";
+        throw err;
+      }
+
       const controller = new AbortController();
+      const onAbort = () => controller.abort();
+      if (externalSignal) externalSignal.addEventListener('abort', onAbort);
       const to = setTimeout(() => controller.abort(), timeoutMs);
       const resp = await client.responses.create(args, { signal: controller.signal } as any);
       clearTimeout(to);
+      if (externalSignal) externalSignal.removeEventListener('abort', onAbort);
       return { response: resp, model: args.model };
     } catch (e: any) {
       lastError = e;
@@ -56,7 +71,10 @@ export async function callResponsesWithRetry(client: OpenAI, cfg: Config, args: 
           console.error(`[openai] error attempt=${attempt} status=${status} type=${etype} name=${ename} msg="${emsg}" body="${bodyExcerpt}"`);
         } catch {}
       }
-      const retriable = (e?.status && (e.status === 429 || e.status >= 500)) || e?.name === "AbortError";
+      const aborted = externalSignal?.aborted || e?.name === "AbortError" || e?.name === "APIUserAbortError";
+      // キャンセル時は即中断（リトライしない）
+      if (aborted) break;
+      const retriable = (e?.status && (e.status === 429 || e.status >= 500));
       if (!retriable || attempt === maxRetries) break;
       const backoff = 300 * Math.pow(2, attempt);
       await delay(backoff);

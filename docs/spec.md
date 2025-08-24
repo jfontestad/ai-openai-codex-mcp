@@ -1,7 +1,7 @@
 
 # 正準仕様（Canonical Spec）— `docs/spec.md`
-最終更新: 2025-08-19（Asia/Tokyo, AI確認）  
-バージョン: **v0.4.x**
+最終更新: 2025-08-24（Asia/Tokyo, AI確認）  
+バージョン: **v0.5.x**
 
 本ドキュメントは **openai-responses-mcp** の**唯一の正準仕様**です。  
 実装・運用・テストは、必ず本仕様に合致していることを条件とします。
@@ -341,6 +341,34 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 6. **`used_search` 判定** と **`citations` 整形**（最大件数適用）。
 7. **応答 JSON 構築**（本文・`used_search`・`citations[]`・`model`）。
 8. **返送**：MCP レスポンスの `content[0].text` に **JSON 文字列**として格納。
+
+---
+
+### 6.1 キャンセル（MCP notifications/cancelled）
+
+本サーバーは MCP のキャンセル通知に対応する。
+
+- クライアント通知（片方向）
+  - `method`: `notifications/cancelled`
+  - `params`: `{ requestId: string | number, reason?: string }`
+  - 応答は不要（通知のため）。
+
+- サーバー側の動作
+  - `tools/call` 開始時に、該当 `id` に対する `AbortController` を作成して登録（`id → controller`）。
+  - キャンセル通知（`requestId` が一致）を受領したら、登録済み `AbortController.abort()` を呼び、中断フラグを立てる。
+  - 中断済みの要求については、以後その `id` に対する `result`/`error` の送信を抑止する（遅延完了は破棄）。
+  - 既に完了・未登録の `requestId` に対する通知は無視する（正常）。
+  - `initialize` はキャンセル不可。
+
+- OpenAI 呼び出しとの連携
+  - `AbortSignal` を OpenAI SDK（Responses API）呼び出しに伝搬する。
+  - リトライ前に `signal.aborted` を確認し、キャンセル時は即座に中断（再試行しない）。
+
+- トランスポート注意
+  - 物理的な切断（disconnection）はキャンセルを意味しない。キャンセル意図がある場合、クライアントは必ず `notifications/cancelled` を送ること。
+
+- ログ（DEBUG 時）
+  - `cancelled requestId=<id> reason=<...>` を最小限で記録（本文・秘密情報は出さない）。
 
 ---
 

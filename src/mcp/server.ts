@@ -47,6 +47,8 @@ function sendError(id: number | string, code: number, message: string, data?: an
 
 export function startServer(cfg: Config) {
   if (debugOn(cfg)) logInfo(`server.start pid=${process.pid}`);
+  // 進行中リクエスト: id -> { controller, cancelled }
+  const inflight = new Map<number | string, { controller: AbortController; cancelled: boolean }>();
   // 起動時要約（stderr、MCPのstdoutを汚さない）
   try {
     const srv: any = (cfg as any).server || {};
@@ -97,15 +99,37 @@ export function startServer(cfg: Config) {
       // プロファイル名として直接使用
       if (name && name in TOOL_DEFINITIONS) {
         try {
-          const out = await callAnswer(args, cfg, name);  // プロファイル名を渡す
+          // リクエスト毎の AbortController を準備（キャンセル通知で中断）
+          const entry = { controller: new AbortController(), cancelled: false };
+          inflight.set(msg.id, entry);
+          const out = await callAnswer(args, cfg, name, entry.controller.signal);  // プロファイル名 + キャンセル伝搬
+          // キャンセルされていれば応答抑止
+          const cur = inflight.get(msg.id) || entry;
+          const abortedNow = cur.cancelled || cur.controller.signal.aborted;
+          if (abortedNow) {
+            if (debugOn(cfg)) logInfo(`tools/call(${name}) cancelled -> suppress response`);
+            inflight.delete(msg.id);
+            return;
+          }
           if (debugOn(cfg)) logInfo(`tools/call(${name}) -> ok`);
           sendResult(msg.id, { content: [{ type: "text", text: JSON.stringify(out) }] });
+          inflight.delete(msg.id);
         } catch (e: any) {
           const dbg = debugOn(cfg);
           let status: any = '-';
           let etype: any = '-';
           let ename: any = '-';
           let emsg: string = e?.message || String(e);
+          // キャンセル後のエラーは握りつぶし（応答しない）
+          const cur = inflight.get(msg.id);
+          const aborted = cur?.cancelled || cur?.controller?.signal?.aborted;
+          if (aborted) {
+            if (dbg) {
+              try { logInfo(`tools/call(${name}) aborted -> suppress error response`); } catch {}
+            }
+            inflight.delete(msg.id);
+            return;
+          }
           if (dbg) {
             try {
               status = (e && (e.status ?? e.code)) ?? '-';
@@ -124,6 +148,23 @@ export function startServer(cfg: Config) {
         if (debugOn(cfg)) logError(`unknown tool: ${name}`);
         sendError(msg.id, -32601, "Unknown tool");
       }
+      return;
+    }
+
+    // キャンセル通知（通知なので応答不要）
+    if (msg.method === "notifications/cancelled") {
+      try {
+        const rid = (msg?.params as any)?.requestId;
+        const reason = (msg?.params as any)?.reason;
+        if (rid !== undefined && inflight.has(rid)) {
+          const e = inflight.get(rid)!;
+          e.cancelled = true;
+          try { e.controller.abort(); } catch {}
+          if (debugOn(cfg)) logInfo(`cancelled requestId=${String(rid)} reason=${reason ?? '-'} -> abort signaled`);
+        } else {
+          if (debugOn(cfg)) logInfo(`cancelled requestId=${String(rid)} (no inflight)`);
+        }
+      } catch {}
       return;
     }
 

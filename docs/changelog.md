@@ -2,6 +2,13 @@
 
 本プロジェクトの変更履歴です。日付は Asia/Tokyo 基準です。
 
+## [0.5.0] - 2025-08-24
+- feat(protocol): MCP キャンセルに対応（`notifications/cancelled`）。該当 `requestId` の処理を中断し、以後は `result/error` を送らない。未登録/完了済みは無視。
+- feat(runtime): OpenAI 呼び出しに `AbortSignal` を伝搬。キャンセル時はリトライを行わず即中断。
+- fix(server): キャンセル直後の例外でもエラー応答を抑止するよう実行順序と in-flight 管理を調整。
+- feat(tests/ci): `scripts/test-*.js` を追加（tools-list, cancel-noinflight, cancel-during-call）。CI に常時/条件テストを組み込み。
+- docs: `docs/spec.md` に「6.1 キャンセル」を追加、`docs/verification.md` に自動テスト手順を追記。
+
 ## [0.4.8] - 2025-08-23
 - fix(protocol): `initialize` 応答から `capabilities.roots` を削除（未実装機能の広告を停止）。Claude Code からの `roots/list` 呼び出しによる切断を予防。
 - feat(protocol): `ping` を最小実装（ヘルスチェック用、空オブジェクトで成功応答）。

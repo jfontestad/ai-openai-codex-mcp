@@ -111,3 +111,33 @@ OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
 
 ## 7. 成功判定（DoD 準拠）
 - 1・2・4 の各検証が**期待どおり**になれば要件を満たしています。
+
+---
+
+## 8. キャンセル（notifications/cancelled）の自動テスト
+
+### 8-1 inflightなしのキャンセル（API鍵不要・常時実行）
+```bash
+npm run build
+node scripts/test-cancel-noinflight.js
+```
+**期待**: `initialize` と `ping` の応答が成功し、テストは exit 0。
+
+### 8-2 実行中キャンセルの抑止（要 OPENAI_API_KEY・任意）
+```bash
+export OPENAI_API_KEY="sk-..."
+npm run build
+node scripts/test-cancel-during-call.js
+```
+**期待**: キャンセル後に `id:3` の `result/error` は出ず、テストは `[test] OK: no response for id=3 after cancel` を表示して exit 0。
+
+備考: GitHub Actions（`ci.yml`）では、APIキー未設定時は 8-2 を自動スキップする。
+
+---
+
+## 9. tools/list のツール定義検証（API鍵不要・常時実行）
+```bash
+npm run build
+node scripts/test-tools-list.js
+```
+**期待**: `answer` / `answer_detailed` / `answer_quick` の3ツールが含まれる。テストは exit 0。

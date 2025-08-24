@@ -1,6 +1,6 @@
 {
   "name": "openai-responses-mcp",
-  "version": "0.4.8",
+  "version": "0.5.0",
   "description": "Lightweight MCP server (Responses API core). OpenAI integration + web_search.",
   "type": "module",
   "bin": {
@@ -24,7 +24,11 @@
     "mcp:smoke:ldjson": "node scripts/mcp-smoke-ldjson.js",
     "mcp:smoke:ping": "node scripts/mcp-smoke-ping.js",
     "mcp:quick": "node scripts/mcp-smoke-quick.js",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node scripts/test-tools-list.js && node scripts/test-cancel-noinflight.js && node scripts/test-cancel-during-call.js",
+    "test:tools-list": "node scripts/test-tools-list.js",
+    "test:cancel-noinflight": "node scripts/test-cancel-noinflight.js",
+    "test:cancel-during-call": "node scripts/test-cancel-during-call.js"
   },
   "dependencies": {
     "openai": "^5.10.2",

@@ -66,7 +66,8 @@ function extractCitations(resp: any): { citations: Citation[]; used: boolean } {
   return { citations: [...set.values()], used };
 }
 
-export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: string) {
+// `signal` は MCP キャンセルを伝搬するために使用
+export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: string, signal?: AbortSignal) {
   const client = createClient(cfg);
   // SSOT（src/policy/system-policy.ts）を既定とし、必要に応じて外部policy.mdを合成
   const system = resolveSystemPolicy(cfg);
@@ -116,7 +117,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
     } catch {}
   }
 
-  const { response, model } = await callResponsesWithRetry(client, cfg, requestBody);
+  const { response, model } = await callResponsesWithRetry(client, cfg, requestBody, signal);
 
   const answer = extractOutputText(response);
   const { citations, used } = extractCitations(response);

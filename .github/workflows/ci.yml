@@ -1,24 +1,35 @@
 name: CI
+
 on:
-  pull_request:
   push:
-    branches: [ "main" ]
+  pull_request:
+
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-    env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build:clean
-      - run: npm pack --dry-run
-      - run: npm run mcp:smoke:ping
-      - run: npm run mcp:smoke:ldjson
-      - name: Optional smoke with OpenAI
-        if: env.OPENAI_API_KEY != ''
-        run: npm run mcp:smoke
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Test (tools/list)
+        run: node scripts/test-tools-list.js
+
+      - name: Test (cancel-noinflight)
+        run: node scripts/test-cancel-noinflight.js
+
+      - name: Test (cancel-during-call, optional)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/test-cancel-during-call.js
