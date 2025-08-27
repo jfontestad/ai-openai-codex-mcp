@@ -14,7 +14,7 @@ function enc(obj){ const s=JSON.stringify(obj); return `Content-Length: ${Buffer
 
 const child = spawn('node', ['build/index.js','--stdio'], {
   stdio: 'pipe',
-  env: { ...process.env, DEBUG_MCP: '1' }
+  env: { ...process.env, DEBUG: '1' }
 });
 
 let sawCallResponse = false;
@@ -51,4 +51,3 @@ setTimeout(() => {
   if (ok) console.error('[test] OK: no response for id=3 after cancel');
   process.exit(ok ? 0 : 1);
 }, 15000);
-

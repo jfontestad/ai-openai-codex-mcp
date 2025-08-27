@@ -72,6 +72,12 @@ search:
 server:
   # トランスポート種別。現状は stdio のみ実装。
   transport: stdio
-  # ログレベル: debug | info | warn | error
-  log_level: info
-
+  # デバッグ（詳細ログ）: CLI/ENV/YAML は同義（優先度: CLI > ENV > YAML）
+  # - CLI: --debug / --debug <path>
+  # - ENV: DEBUG=1|true|<path>
+  # - YAML: server.debug: true（任意で server.debug_file: <path>）
+  debug: false
+  # パス指定時は stderr をファイルへTEEミラー
+  debug_file: null
+  # 起動時にstderrへ実効設定の要約を表示
+  show_config_on_start: false

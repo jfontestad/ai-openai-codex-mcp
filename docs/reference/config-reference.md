@@ -172,12 +172,17 @@ server:
 | `SEARCH_MAX_RESULTS` | integer | `search.defaults.max_results` | 1..10 |
 | `SEARCH_RECENCY_DAYS` | integer | `search.defaults.recency_days` | >=0 |
 | `MAX_CITATIONS` | integer | `policy.max_citations` | 1..10 |
-| `DEBUG` | 1/true/path | `server.debug`/`server.debug_file` | `1|true` でON、`<path>` でファイル＋画面ミラー |
+| `DEBUG` | 1/true/path | `server.debug`/`server.debug_file` | `1|true` でON、`<path>` でファイルにTEEミラー |
 | `MODEL_ANSWER` | string | `model_profiles.answer.model` | クイック上書き（恒久はYAMLで設定） |
 | `ANSWER_EFFORT` | enum | `model_profiles.answer.reasoning_effort` | `low`/`medium`/`high` |
 | `ANSWER_VERBOSITY` | enum | `model_profiles.answer.verbosity` | `low`/`medium`/`high` |
 
 > `openai.api_key_env` を `MY_KEY` に変えた場合、**`MY_KEY`** を設定してください。`OPENAI_API_KEY` は見られません。
+
+補足（デバッグ有効化の単一判定）
+- デバッグは CLI / ENV / YAML を同義とし、優先度は **CLI > ENV > YAML**。
+- アプリ起動時に最終状態（enabled/file）を確定し、以降は共通判定（`isDebug()`）に従う。
+- YAML のみで `server.debug: true` が指定された場合でも、すべてのモジュールで等しくデバッグログが有効になる。
 
 ---
 
@@ -213,7 +218,7 @@ node build/index.js --show-config 2> effective-config.json
     
     "policy": { "prefer_search_when_unsure": true, "max_citations": 3, "require_dates_iso": true },
     "search": { "defaults": { "recency_days": 60, "max_results": 5, "domains": [] } },
-    "server": { "transport": "stdio", "log_level": "info" }
+    "server": { "transport": "stdio", "debug": true, "debug_file": "./_debug.log", "show_config_on_start": true }
   }
 }
 ```
@@ -227,7 +232,7 @@ node build/index.js --show-config 2> effective-config.json
 - `policy.requery_attempts` ∈ [0,3]  
 - `search.defaults.max_results` ∈ [1,10]  
 - `search.defaults.recency_days` ≥ 0  
-- `server.log_level` ∈ {`debug`,`info`,`warn`,`error`}  
+  
 
 不正な値はエラーとは限らず、そのまま適用される場合があります。CI で `--show-config` の JSON（stderr）を検査することを推奨します。
 

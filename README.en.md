@@ -27,7 +27,7 @@ Important: The canonical specification is `docs/spec.md`. See that file for deta
 - `tsconfig.json`                : TypeScript configuration
 - `.gitignore`                   : Git ignore settings
 
---
+---
 
 ## Highlights (Overview)
 - Responses API compliant (official JS SDK `openai`)
@@ -41,7 +41,7 @@ Important: The canonical specification is `docs/spec.md`. See that file for deta
 - npm (bundled with Node)
 - OpenAI API key (provided via environment variable)
 
---
+---
 
 ## Minimal Setup (boot with only required settings)
 - Required setting: just the `OPENAI_API_KEY` environment variable (no YAML needed)
@@ -50,7 +50,7 @@ Important: The canonical specification is `docs/spec.md`. See that file for deta
 
 You can add YAML later (default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`).
 
---
+---
 
 ## For Users (use as an MCP)
 Use this from an MCP client.
@@ -145,15 +145,15 @@ policy:
 Sample: `config/policy.md.example`
 
 ### 6) Logs and debugging
-- Debug ON (console): `--debug` or `DEBUG=1|true`
+- Debug ON (console): `--debug` / `DEBUG=1|true` / YAML `server.debug: true` (priority: CLI > ENV > YAML; single decision at startup)
 - Debug ON (file + console mirror): `--debug ./_debug.log` or `DEBUG=./_debug.log`
 - Debug OFF: only minimal operational logs
 
 Notes (controlled via YAML):
-- `server.debug: true|false`
-- `server.debug_file: <path|null>`
+- `server.debug: true|false` (applies to all modules even if set only in YAML)
+- `server.debug_file: <path|null>` (TEE mirror to file when specified)
 
---
+---
 
 ## For Developers (clone and develop)
 
@@ -188,7 +188,7 @@ npm run mcp:smoke:ldjson   # NDJSON-compatible connectivity check
 - Reference: `docs/reference/config-reference.md` / `docs/reference/client-setup-claude.md`
 - Verification steps: `docs/verification.md`
 
---
+---
 
 ## For Maintainers (distribution)
 
@@ -198,7 +198,7 @@ npm pack --dry-run    # Verify included files (only build/ and README/LICENSE/sa
 npm publish           # Publish (unscoped)
 ```
 
---
+---
 
 ## Troubleshooting (Essentials)
 - `Missing API key`: `OPENAI_API_KEY` not set. Review your environment variables
@@ -206,7 +206,7 @@ npm publish           # Publish (unscoped)
 - Framing mismatch: Check with `npm run mcp:smoke` and rebuild
 - Frequent 429/5xx: Adjust `request.max_retries`/`timeout_ms` (YAML)
 
---
+---
 
 ## License
 MIT
@@ -215,4 +215,3 @@ MIT
 
 <p><a href="https://medium.com/@uchimanajet7/experimenting-with-openai-codex-and-claude-code-openai-responses-mcp-dev-notes-b121b0d19903">Experimenting with OpenAI Codex and Claude Code: openai-responses-mcp Dev Notes
 </a></p>
-

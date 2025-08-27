@@ -92,7 +92,7 @@ Content-Length: 28
 - **並列リクエスト**：ID をキーに同時進行可。順不同応答を許容すること。
 
 ### 1.8 ロギング & トラブルシュート
-- **デバッグモード**：`--debug` または `DEBUG=1` で起動すると、stderr に段階ログを出力（例：`stdin chunk=...` / `headerEnd=...` / `recv method=...` / `send (line|framed) bytes=...` / `send json=...`）。
+- **デバッグモード**：CLI/ENV/YAML の同義判定（優先度: CLI > ENV > YAML）により有効化される。起動時に確定した単一判定（`isDebug()`）に従い、stderr に段階ログを出力（例：`stdin chunk=...` / `headerEnd=...` / `recv method=...` / `send (line|framed) bytes=...` / `send json=...`）。
 - **フレーミング崩れの典型**：`Content-Length` ミスマッチ、`\r\n\r\n` 欠落、BOM 混入。行区切りJSONにも自動フォールバック。
 - **検査**：`npm run mcp:smoke` で `initialize → tools/list → tools/call` の 3応答を確認。
 

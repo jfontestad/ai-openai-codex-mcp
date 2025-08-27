@@ -14,7 +14,7 @@ function encode(msg) {
 function start() {
   const child = spawn("node", ["build/index.js", "--stdio"], {
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, DEBUG_MCP: "1" } // DEBUG 有効化
+    env: { ...process.env, DEBUG: "1" } // DEBUG 有効化
   });
 
   let buf = Buffer.alloc(0);
@@ -62,4 +62,3 @@ function start() {
 }
 
 start();
-

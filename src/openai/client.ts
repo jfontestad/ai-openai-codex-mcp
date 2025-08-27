@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { isDebug } from "../debug/state.js";
 import { Config } from "../config/defaults.js";
 
 export function createClient(cfg: Config) {
@@ -54,10 +55,8 @@ export async function callResponsesWithRetry(
       return { response: resp, model: args.model };
     } catch (e: any) {
       lastError = e;
-      // DEBUGは環境変数が非空であれば有効（"1"/"true"/任意のパス）
-      const dv = (process.env.DEBUG_MCP ?? process.env.MCP_DEBUG ?? "").toString().toLowerCase();
-      const isDebug = dv === '1' || dv === 'true' || dv.length > 0;
-      if (isDebug) {
+      // 単一判定に基づくデバッグ出力
+      if (isDebug()) {
         try {
           const status = (e && (e.status ?? e.code)) ?? '-';
           const ename = e?.name ?? '-';

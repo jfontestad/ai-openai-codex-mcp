@@ -9,7 +9,7 @@ function enc(obj){ const s=JSON.stringify(obj); return `Content-Length: ${Buffer
 
 const child = spawn('node', ['build/index.js','--stdio'], {
   stdio: 'pipe',
-  env: { ...process.env, DEBUG_MCP: '1' }
+  env: { ...process.env, DEBUG: '1' }
 });
 
 let okInitialize = false;
@@ -45,4 +45,3 @@ setTimeout(() => {
   if (!ok) console.error('[test] cancel-noinflight: FAILED');
   process.exit(ok ? 0 : 1);
 }, 1500);
-

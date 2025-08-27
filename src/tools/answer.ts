@@ -1,6 +1,7 @@
 import type { Config } from "../config/defaults.js";
 import { createClient, callResponsesWithRetry } from "../openai/client.js";
 import { SYSTEM_POLICY } from "../policy/system-policy.js";
+import { isDebug } from "../debug/state.js";
 import { resolveSystemPolicy } from "../policy/resolve.js";
 
 export type AnswerInput = {
@@ -103,11 +104,8 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
     requestBody.reasoning = { effort };
   }
 
-  // DEBUG ログ: プロファイル・対応機能・送信要約
-  // DEBUGは環境変数が非空であれば有効（"1"/"true"/任意のパス）
-  const dv = (process.env.DEBUG ?? "").toString().toLowerCase();
-  const isDebug = dv === '1' || dv === 'true' || dv.length > 0;
-  if (isDebug) {
+  // DEBUG ログ: プロファイル・対応機能・送信要約（単一判定）
+  if (isDebug()) {
     try {
       const toolsOn = Array.isArray(requestBody.tools) && requestBody.tools.some((t: any) => t?.type === 'web_search');
       const reasoningOn = !!requestBody.reasoning;

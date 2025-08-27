@@ -2,10 +2,10 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { readFileSync, createWriteStream, mkdirSync } from "node:fs";
-import os from "node:os";
 import { loadConfig } from "./config/load.js";
 import { resolveConfigPath } from "./config/paths.js";
 import { startServer } from "./mcp/server.js";
+import { setDebug } from "./debug/state.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "..", "package.json"), "utf8"));
@@ -128,8 +128,8 @@ async function main() {
     const dbgEnabled = !!loaded.effective.server.debug;
     const dbgFile = (loaded.effective.server as any).debug_file || null;
 
-    // セットアップ（ファイル指定時はTEEでミラー）
-    setupDebugFileSink(dbgEnabled, dbgFile);
+    // 単一判定へ反映（以降は isDebug() を参照）
+    setDebug(dbgEnabled, dbgFile);
 
     // デバッグ時は起動情報をstderrに出す（GUIクライアントでの切り分け用）
     if (dbgEnabled) {
@@ -149,45 +149,6 @@ async function main() {
 
   console.error("Unknown options. Try --help");
   process.exit(1);
-}
-
-// デバッグログのファイルシンク設定
-function setupDebugFileSink(enabled: boolean, filePath: string | null): void {
-  if (!enabled) return;
-  if (!filePath) return; // 画面のみ（ファイルミラーなし）
-
-  // パスとして扱う
-  let p = filePath;
-  if (p.startsWith("~")) p = os.homedir() + p.slice(1);
-  const resolvedPath = resolve(p);
-
-  let stream: import("node:fs").WriteStream | undefined;
-  try {
-    // 親ディレクトリを再帰作成（存在する場合は何もしない）
-    try { mkdirSync(dirname(resolvedPath), { recursive: true }); } catch {}
-    stream = createWriteStream(resolvedPath, { flags: "a", encoding: "utf8" });
-  } catch (e: any) {
-    // 失敗時は警告してフォールバック
-    try { console.error(`[mcp] ${new Date().toISOString()} WARN failed to open debug file path=${resolvedPath} err=${e?.message ?? e}`); } catch {}
-    return;
-  }
-
-  const origWrite = process.stderr.write.bind(process.stderr) as typeof process.stderr.write;
-  // 画面と同等の出力をファイルにもミラー（TEE）
-  process.stderr.write = ((chunk: any, encoding?: any, cb?: any) => {
-    try {
-      stream!.write(chunk as any);
-    } catch {
-      // ファイル書き込み失敗時も画面出力は継続
-    }
-    // 画面（元のstderr）へも出力
-    return origWrite(chunk as any, encoding as any, cb as any);
-  }) as any;
-
-  // プロセス終了時にクローズ
-  process.on("exit", () => {
-    try { stream?.end(); } catch {}
-  });
 }
 
 main().catch((e) => {

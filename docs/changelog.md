@@ -2,6 +2,14 @@
 
 本プロジェクトの変更履歴です。日付は Asia/Tokyo 基準です。
 
+## [0.6.0] - 2025-08-27
+- feat(logging): デバッグ判定を単一化。CLI/ENV/YAML を同義化し、優先度を CLI > ENV > YAML に統一（起動時に最終決定→以降は isDebug() を参照）。
+- refactor(logging): `src/debug/state.ts` を追加し、stderr→ファイルTEEミラーを含むデバッグ出力経路を一元化。
+- breaking(logging): `DEBUG_MCP` / `MCP_DEBUG` 環境変数のサポートを削除（今後は `DEBUG=1|true|<path>` のみ）。
+- docs: `docs/spec.md` / `docs/reference/*` / `README.*` を単一判定・同義化仕様へ更新。`server.log_level` の記述を削除。
+- config: `config/config.yaml.example` を `server.debug` / `server.debug_file` / `show_config_on_start` に更新。
+- chore(tests): `_temp_/_ai_/run-yaml-debug-test.js` を追加。スクリプトの `DEBUG_MCP` を `DEBUG` に統一。
+
 ## [0.5.0] - 2025-08-24
 - feat(protocol): MCP キャンセルに対応（`notifications/cancelled`）。該当 `requestId` の処理を中断し、以後は `result/error` を送らない。未登録/完了済みは無視。
 - feat(runtime): OpenAI 呼び出しに `AbortSignal` を伝搬。キャンセル時はリトライを行わず即中断。

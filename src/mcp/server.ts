@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { callAnswer } from "../tools/answer.js";
 import { TOOL_DEFINITIONS } from "../tools/tool-definitions.js";
 import type { Config } from "../config/defaults.js";
+import { isDebug } from "../debug/state.js";
 
 type JsonRpc = {
   jsonrpc?: "2.0";
@@ -29,14 +30,7 @@ function pkgVersion(): string {
     return "0.0.0";
   }
 }
-function debugOn(cfg: Config): boolean {
-  try {
-    const yaml = ((cfg as any)?.server?.debug ? true : false);
-    const ev = (process.env.DEBUG ?? "").toString();
-    const envOn = ev ? (ev === '1' || ev.toLowerCase() === 'true' || ev.length > 0) : false;
-    return yaml || envOn;
-  } catch { return false; }
-}
+// デバッグ判定は共通の isDebug() に統一
 
 function sendResult(id: number | string, result: any) {
   writeMessage({ jsonrpc: "2.0", id, result });
@@ -46,7 +40,7 @@ function sendError(id: number | string, code: number, message: string, data?: an
 }
 
 export function startServer(cfg: Config) {
-  if (debugOn(cfg)) logInfo(`server.start pid=${process.pid}`);
+  if (isDebug()) logInfo(`server.start pid=${process.pid}`);
   // 進行中リクエスト: id -> { controller, cancelled }
   const inflight = new Map<number | string, { controller: AbortController; cancelled: boolean }>();
   // 起動時要約（stderr、MCPのstdoutを汚さない）
@@ -55,7 +49,7 @@ export function startServer(cfg: Config) {
     const mp: any = (cfg as any).model_profiles?.answer || {};
     const rq: any = (cfg as any).request || {};
     const sh = !!srv.show_config_on_start;
-    if (debugOn(cfg) || sh) {
+    if (isDebug() || sh) {
       logInfo(`config summary: model(answer)=${mp.model ?? '-'} effort=${mp.reasoning_effort ?? '-'} verbosity=${mp.verbosity ?? '-'} timeout_ms=${rq.timeout_ms ?? '-'} retries=${rq.max_retries ?? '-'}`);
       const pol: any = (cfg as any).policy?.system || {};
       if (pol?.source === 'file') logInfo(`policy: source=file path=${pol.path ?? ''} merge=${pol.merge ?? 'replace'}`);
@@ -63,7 +57,7 @@ export function startServer(cfg: Config) {
   } catch {}
   readMessages(async (raw: any) => {
     const msg = raw as JsonRpc;
-    if (debugOn(cfg)) {
+    if (isDebug()) {
       const method = msg?.method || (msg?.result ? "<result>" : msg?.error ? "<error>" : "<unknown>");
       logInfo(`recv method=${method} id=${String(msg?.id ?? "-")}`);
     }
@@ -75,21 +69,21 @@ export function startServer(cfg: Config) {
         capabilities: { tools: {} },
         serverInfo: { name: "openai-responses-mcp", version: pkgVersion() }
       };
-      if (debugOn(cfg)) logInfo(`initialize -> ok`);
+      if (isDebug()) logInfo(`initialize -> ok`);
       sendResult(msg.id, res);
       return;
     }
 
     if (msg.method === "tools/list" && msg.id !== undefined) {
       const tools = Object.values(TOOL_DEFINITIONS);
-      if (debugOn(cfg)) logInfo(`tools/list -> ${tools.length} tools`);
+      if (isDebug()) logInfo(`tools/list -> ${tools.length} tools`);
       sendResult(msg.id, { tools });
       return;
     }
 
     if (msg.method === "tools/call" && msg.id !== undefined) {
       const { name, arguments: args } = (msg.params || {}) as { name?: string; arguments?: any };
-      if (debugOn(cfg)) {
+      if (isDebug()) {
         try {
           const keys = Object.keys(args || {});
           const qlen = typeof (args?.query) === 'string' ? (args.query as string).length : undefined;
@@ -107,15 +101,15 @@ export function startServer(cfg: Config) {
           const cur = inflight.get(msg.id) || entry;
           const abortedNow = cur.cancelled || cur.controller.signal.aborted;
           if (abortedNow) {
-            if (debugOn(cfg)) logInfo(`tools/call(${name}) cancelled -> suppress response`);
+            if (isDebug()) logInfo(`tools/call(${name}) cancelled -> suppress response`);
             inflight.delete(msg.id);
             return;
           }
-          if (debugOn(cfg)) logInfo(`tools/call(${name}) -> ok`);
+          if (isDebug()) logInfo(`tools/call(${name}) -> ok`);
           sendResult(msg.id, { content: [{ type: "text", text: JSON.stringify(out) }] });
           inflight.delete(msg.id);
         } catch (e: any) {
-          const dbg = debugOn(cfg);
+          const dbg = isDebug();
           let status: any = '-';
           let etype: any = '-';
           let ename: any = '-';
@@ -145,7 +139,7 @@ export function startServer(cfg: Config) {
           sendError(msg.id, -32001, "answer failed", data);
         }
       } else {
-        if (debugOn(cfg)) logError(`unknown tool: ${name}`);
+        if (isDebug()) logError(`unknown tool: ${name}`);
         sendError(msg.id, -32601, "Unknown tool");
       }
       return;
@@ -160,9 +154,9 @@ export function startServer(cfg: Config) {
           const e = inflight.get(rid)!;
           e.cancelled = true;
           try { e.controller.abort(); } catch {}
-          if (debugOn(cfg)) logInfo(`cancelled requestId=${String(rid)} reason=${reason ?? '-'} -> abort signaled`);
+          if (isDebug()) logInfo(`cancelled requestId=${String(rid)} reason=${reason ?? '-'} -> abort signaled`);
         } else {
-          if (debugOn(cfg)) logInfo(`cancelled requestId=${String(rid)} (no inflight)`);
+          if (isDebug()) logInfo(`cancelled requestId=${String(rid)} (no inflight)`);
         }
       } catch {}
       return;
@@ -170,7 +164,7 @@ export function startServer(cfg: Config) {
 
     // ping（ヘルスチェック）最小実装
     if (msg.method === "ping") {
-      if (debugOn(cfg)) logInfo(`recv method=ping id=${String(msg?.id ?? '-')}`);
+      if (isDebug()) logInfo(`recv method=ping id=${String(msg?.id ?? '-')}`);
       if (msg.id !== undefined) {
         // 空オブジェクトでOK（仕様上は実装依存）。
         sendResult(msg.id, {});
@@ -179,7 +173,7 @@ export function startServer(cfg: Config) {
     }
 
     if (msg.id !== undefined) {
-      if (debugOn(cfg)) logError(`unknown method: ${msg.method}`);
+      if (isDebug()) logError(`unknown method: ${msg.method}`);
       sendError(msg.id, -32601, "Unknown method");
     }
   });

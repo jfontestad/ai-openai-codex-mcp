@@ -27,7 +27,7 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 - `tsconfig.json`                : TypeScript 設定
 - `.gitignore`                   : Git 除外設定
 
---
+---
 
 ## 特長（概要）
 - Responses API 準拠（公式JS SDK `openai`）
@@ -41,7 +41,7 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 - npm（Node 同梱）
 - OpenAI API キー（環境変数で渡す）
 
---
+---
 
 ## 最小構成（必須設定だけで起動）
 - 必須設定: 環境変数 `OPENAI_API_KEY` のみ（YAMLは不要）
@@ -50,7 +50,7 @@ OpenAI Responses API を推論コアに採用した軽量な MCP サーバです
 
 YAML は後から追加可能です（既定パス: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`、Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`）。
 
---
+---
 
 ## 利用者向け（MCPとして使う）
 MCPクライアントから利用する場合に参考にしてください。
@@ -145,15 +145,15 @@ policy:
 サンプル: `config/policy.md.example`
 
 ### 6) ログとデバッグ
-- デバッグON（画面出力）: `--debug` または `DEBUG=1|true`
+- デバッグON（画面出力）: `--debug` / `DEBUG=1|true` / YAML `server.debug: true`（優先度: CLI > ENV > YAML, 単一判定）
 - デバッグON（ファイル＋画面ミラー）: `--debug ./_debug.log` または `DEBUG=./_debug.log`
 - デバッグOFF: 最小限の稼働確認ログのみ
 
 補足（YAMLでの制御）:
-- `server.debug: true|false`
-- `server.debug_file: <path|null>`
+- `server.debug: true|false`（YAMLのみでも全モジュールに反映）
+- `server.debug_file: <path|null>`（指定時は stderr をファイルへTEEミラー）
 
---
+---
 
 ## 開発者向け（クローンして開発）
 
@@ -188,7 +188,7 @@ npm run mcp:smoke:ldjson   # NDJSON互換の疎通確認
 - リファレンス: `docs/reference/config-reference.md` / `docs/reference/client-setup-claude.md`
 - 検証手順: `docs/verification.md`
 
---
+---
 
 ## メンテナ向け（配布）
 
@@ -198,7 +198,7 @@ npm pack --dry-run    # 同梱物を確認（build/ と README/LICENSE/サンプ
 npm publish           # 公開（スコープなし）
 ```
 
---
+---
 
 ## トラブルシュート（要点）
 - `Missing API key`: `OPENAI_API_KEY` 未設定。ENV を見直し
@@ -206,7 +206,7 @@ npm publish           # 公開（スコープなし）
 - フレーミング不一致: `npm run mcp:smoke` で確認し再ビルド
 - 429/5xx 多発: `request.max_retries`/`timeout_ms` を調整（YAML）
 
---
+---
 
 ## ライセンス
 MIT
@@ -216,4 +216,3 @@ MIT
 <p><a href="https://uchimanajet7.hatenablog.com/entry/2025/08/21/203000
 ">openai-responses-mcp 開発メモ - Codex と Claude Code を両方使って作ってみた
 </a></p>
-

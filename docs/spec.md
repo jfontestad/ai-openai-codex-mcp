@@ -290,7 +290,7 @@ policy:
 search:
   defaults: { recency_days: 60, max_results: 5, domains: [] }
 
-server: { transport: stdio, hot_reload: false, log_level: info }
+server: { transport: stdio, debug: false, debug_file: null, show_config_on_start: false }
 ```
 
 ### 5.4 主要 ENV
@@ -306,7 +306,7 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 | `MODEL_ANSWER` | `model_profiles.answer.model` |
 | `MODEL_DETAILED` | `model_profiles.answer_detailed.model` |
 | `MODEL_QUICK` | `model_profiles.answer_quick.model` |
-| `LOG_LEVEL` | `server.log_level` |
+| `DEBUG` | `server.debug`/`server.debug_file` |
 
 ### 5.5 CLI
 ```
@@ -384,14 +384,19 @@ server: { transport: stdio, hot_reload: false, log_level: info }
 - ログに**回答本文やキーをフルで残さない**。必要最小のメタ情報（モデル名/レイテンシ/再試行回数）に限定。
 - プロキシ・私設ゲートウェイ利用は組織方針に従う。
 
-### 8.1 デバッグログ（DEBUG=1 または `--debug` 時のみ）
+### 8.1 デバッグログ（有効条件と単一判定）
 - 目的：障害時の切り分け（モデル非対応・タイムアウト・429/5xx・不正引数）を、本文や秘匿情報を出さずに特定する。
-- 共通方針：stderr へ出力。API キーや本文、instructions は出力しない。
+- 有効化の入力源（同義、優先度：CLI > ENV > YAML）
+  - CLI: `--debug` または `--debug <path>`
+  - ENV: `DEBUG=1|true|<path>`
+  - YAML: `server.debug: true`（任意で `server.debug_file: <path>`）
+- 単一判定：アプリ起動時に最終状態（enabled/file）を一度だけ確定し、以降は共通関数で判定する（`isDebug()`）。モジュール個別に `process.env` を参照しない。
+- 出力方針：stderr へ出力（必要に応じて `<path>` にTEEミラー）。API キーや本文、instructions は出力しない。
 - 出力内容（例）：
   - server: `tools/call name=<tool> argsKeys=[...] queryLen=<n>`
   - answer: `profile=<name> model=<id> supports={verbosity:<bool>, reasoning:<bool>}`
   - answer: `request summary tools=web_search(<on/off>) reasoning=<on/off> text.verbosity=<on/off>`
-- openai(client): `error attempt=<n> status=<code> name=<err.name> code=<err.code> msg="..." body="<先頭抜粋>"`
+  - openai(client): `error attempt=<n> status=<code> name=<err.name> code=<err.code> msg="..." body="<先頭抜粋>"`
 - 機密対策：
   - 本文は長さのみ（`queryLen`）を記録。`instructions` は出力しない。
   - レスポンスボディは先頭数百文字に丸め、URL/鍵等が含まれないことを前提に表示。疑義がある場合は出力を抑止。

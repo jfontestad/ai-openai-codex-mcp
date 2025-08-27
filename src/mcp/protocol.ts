@@ -1,17 +1,10 @@
 import { stdin, stdout } from "node:process";
+import { isDebug } from "../debug/state.js";
 
 export type JsonRpcMessage = { [k: string]: any };
 
 let lineDelimitedMode = false; // Claude互換: 行区切りJSONでやり取りする場合に有効化
 export function enableLineDelimitedMode() { lineDelimitedMode = true; }
-
-function isDebug(): boolean {
-  const v = (process.env.DEBUG ?? "").toString();
-  if (!v) return false;
-  const s = v.toLowerCase();
-  // `DEBUG` は 1/true でON、任意の非空文字列（パス等）でもON
-  return s === "1" || s === "true" || s.length > 0;
-}
 
 export function writeMessage(msg: JsonRpcMessage): void {
   const json = JSON.stringify(msg);
