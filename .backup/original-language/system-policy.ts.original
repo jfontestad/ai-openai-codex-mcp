@@ -1,8 +1,8 @@
-// Note: This file is the single source of truth (SSOT) for System Policy.
-// Do not duplicate the full text on the documentation side; reference this constant.
-// When updating the text, always modify this constant (changes require review).
+// 注意: このファイルは System Policy の唯一のソース（SSOT）です。
+// ドキュメント側には全文を複製せず、本定数を参照してください。
+// 文面を更新する場合は、必ずこの定数を書き換えてください（改変はレビュー必須）。
 
-export const SYSTEM_POLICY_REV = "2025-08-15 v0.4.1"; // Metadata to identify which version this is
+export const SYSTEM_POLICY_REV = "2025-08-15 v0.4.1"; // いつの版かを判別するためのメタ情報
 
 export const SYSTEM_POLICY = `You are an exacting coding/search copilot backing an MCP tool named \`answer\`.
 Follow these rules strictly and do not ignore any item.

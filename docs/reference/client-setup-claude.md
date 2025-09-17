@@ -1,25 +1,25 @@
 
-# Claude Code / Claude Desktop 連携手順 — `docs/reference/client-setup-claude.md`
-最終更新: 2025-08-09（Asia/Tokyo）
+# Claude Code / Claude Desktop Integration Guide — `docs/reference/client-setup-claude.md`
+Last Updated: 2025-08-09 (Asia/Tokyo)
 
-本ドキュメントは **openai-responses-mcp**（stdio）を Claude 系クライアントに登録して利用するための、
-実務向けの完全手順です。**要約なし**。クライアント固有の設定ファイル位置はバージョンで変わるため、
-ここでは**設定フォーマットと検証手順**を厳密に記述します。
-
----
-
-## 1. 前提（サーバ側）
-- Node.js 20+、npm。
-- OpenAI API キーは **環境変数**で用意（例: `OPENAI_API_KEY`）。
+This document provides complete step-by-step instructions for registering and using **openai-responses-mcp** (stdio) with Claude clients.
+**No summary provided**. Since client-specific configuration file locations change with versions,
+this document strictly describes **configuration formats and verification procedures**.
 
 ---
 
-## 2. Claude クライアントでの MCP サーバ登録（共通フォーマット）
-Claude 系クライアント（Claude Code / Claude Desktop）は、共通して **`mcpServers`** という
-マップ構造でサーバを登録します。**設定ファイルの正確な場所はクライアントの UI（設定 → 開発者向け）から開く**こと。
-パスを直指定せず、**必ず UI から開いたファイル**を編集してください。
+## 1. Prerequisites (Server Side)
+- Node.js 20+, npm.
+- OpenAI API key prepared as **environment variable** (e.g., `OPENAI_API_KEY`).
 
-### 2.1 設定例（最小・推奨）
+---
+
+## 2. MCP Server Registration in Claude Clients (Common Format)
+Claude-family clients (Claude Code / Claude Desktop) commonly register servers using a **`mcpServers`** 
+map structure. **Open the configuration file from the client UI (Settings → Developer) to find the exact location**.
+Do not specify paths directly - **always edit the file opened through the UI**.
+
+### 2.1 Configuration Example (Minimal/Recommended)
 ```json
 {
   "mcpServers": {
@@ -33,10 +33,10 @@ Claude 系クライアント（Claude Code / Claude Desktop）は、共通して
   }
 }
 ```
-> YAML（`~/.config/openai-responses-mcp/config.yaml`）で `model_profiles` を設定している場合、そちらが適用されます。
+> If you configure `model_profiles` in YAML (`~/.config/openai-responses-mcp/config.yaml`), those settings will be applied.
 
-### 2.2 プロファイル設定（YAML）
-`~/.config/openai-responses-mcp/config.yaml` に以下のように記述します。
+### 2.2 Profile Configuration (YAML)
+Write the following in `~/.config/openai-responses-mcp/config.yaml`.
 ```yaml
 model_profiles:
   answer:
@@ -52,11 +52,11 @@ model_profiles:
     reasoning_effort: low
     verbosity: low
 ```
-- **`--stdio` は必須**（Claude からの起動は stdio）。
-- **必須環境変数**: `OPENAI_API_KEY`。
-- **セキュリティ**: APIキーはENVで渡す。YAMLに秘匿情報は書かない。
+- **`--stdio` is mandatory** (Claude startup uses stdio).
+- **Required environment variable**: `OPENAI_API_KEY`.
+- **Security**: Pass API keys via ENV. Do not write sensitive information in YAML.
 
-### 2.3 リモートで実行したい場合（SSH 経由の例）
+### 2.3 Remote Execution Example (via SSH)
 ```json
 {
   "mcpServers": {
@@ -73,64 +73,64 @@ model_profiles:
   }
 }
 ```
-> SSH 経由では **接続先に Node とビルド済みファイル**が必要。鍵/接続設定は OS 側で準備する。
+> For SSH execution, **Node and built files must be available on the remote host**. Set up keys/connection configuration on the OS side.
 
 ---
 
-## 2.4 環境変数（必要最小限）
-| 環境変数 | 必須 | 説明 |
+## 2.4 Environment Variables (Minimum Required)
+| Environment Variable | Required | Description |
 |---|---|---|
-| `OPENAI_API_KEY` | ✅ | OpenAI APIキー |
+| `OPENAI_API_KEY` | ✅ | OpenAI API key |
 
 ---
 
-## 3. 再起動と適用
-- 設定ファイルを保存後、**Claude クライアントを完全終了 → 再起動**。
-- 起動時に MCP サーバが立ち上がり、**initialize → tools/list** が送られる。
+## 3. Restart and Application
+- After saving the configuration file, **completely exit Claude client → restart**.
+- On startup, the MCP server will launch and **initialize → tools/list** will be sent.
 
 ---
 
-## 4. 動作確認（クライアント側での観察）
-- クライアントの **開発者ログ/デベロッパーツール**を開く（UI から辿る）。
-- 次の 3 つのメッセージが **Content-Length** 付きで現れる：
-  1) `initialize`（クライアント → サーバ）
-  2) `tools/list`（クライアント → サーバ）
-  3) `result`（サーバ → クライアント; tools 一覧に3つのツールがある）
+## 4. Operation Verification (Client-Side Observation)
+- Open the client's **developer logs/developer tools** (accessed through the UI).
+- The following 3 messages should appear with **Content-Length** headers:
+  1) `initialize` (client → server)
+  2) `tools/list` (client → server)
+  3) `result` (server → client; tool list should contain 3 tools)
 
-**期待値（例）**
+**Expected Value (Example)**
 ```http
 Content-Length: 157
 
 {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"openai-responses-mcp","version":"0.4.0"}}}
 ```
-`tools`内に`answer`、`answer_detailed`、`answer_quick`の3つが表示されれば登録成功。
+If the `tools` section displays the 3 tools: `answer`, `answer_detailed`, and `answer_quick`, registration was successful.
 
 ---
 
-## 5. 実地テスト（Claude からの利用）
-- Claude に通常どおり指示を与える。**時事性がある質問**（例: 「本日 YYYY-MM-DD の東京の天気」）では、
-  モデルが `web_search` を必要と判断すると **MCP サーバの `answer` が呼ばれ**、外部出典を含む回答が返る。
-- **安定知識の質問**（例: HTTP 404 の意味）は `web_search` を使わず、`citations` なしで答える。
+## 5. Practical Testing (Using from Claude)
+- Give Claude instructions as usual. For **time-sensitive questions** (e.g., "Today's Tokyo weather for YYYY-MM-DD"),
+  when the model determines `web_search` is needed, **the MCP server's `answer` will be called**, returning a response with external sources.
+- **Stable knowledge questions** (e.g., meaning of HTTP 404) will not use `web_search` and will answer without `citations`.
 
-> クライアントのプロンプト方針で「エラー時には必ず MCP `answer` を呼ぶ」等を指示している場合、
-> そのルールに従って自動的に `answer` が起動される。
-
----
-
-## 6. トラブルシュート
-- **何も表示されない**: パスが相対/誤り。**絶対パス**で指定。実行権限の不足（Windows の拡張子関連含む）。
-- **API キー未設定**: `Missing API key: set OPENAI_API_KEY`。設定ファイルの `env` で値を渡す。
-- **フレーミングエラー**: `Content-Length` 不一致。ビルドし直し（`npm run build`）。
-- **Timeout/429**: ネットワーク混雑または API 側都合。自動リトライ＆フォールバックが入る。
+> If the client's prompt policy specifies "always call MCP `answer` on errors", etc.,
+> `answer` will be automatically triggered according to that rule.
 
 ---
 
-## 7. セキュリティ / 運用
-- キーや回答本文の**フルログ保存はしない**。必要な最小のメタ情報のみ記録する。
-- 機密性が高い環境では、**SSH 経由**でリモート実行し、ローカルに鍵を残さない運用も可能。
+## 6. Troubleshooting
+- **Nothing displays**: Path is relative/incorrect. Specify **absolute path**. Insufficient execution permissions (including Windows extension issues).
+- **API key not set**: `Missing API key: set OPENAI_API_KEY`. Pass the value in the configuration file's `env` section.
+- **Framing error**: `Content-Length` mismatch. Rebuild (`npm run build`).
+- **Timeout/429**: Network congestion or API-side issues. Automatic retry & fallback will be activated.
 
 ---
 
-## 8. 解除 / ロールバック
-- 設定ファイルから該当エントリを削除し、クライアントを再起動。
-- 一時的に無効化する場合は、`command` を無効コマンドに置き換えるのではなく、**エントリ削除**を推奨。
+## 7. Security / Operations
+- Do not **save full logs** of keys or response content. Record only the minimum necessary metadata.
+- In high-security environments, **remote execution via SSH** is possible to avoid leaving keys locally.
+
+---
+
+## 8. Removal / Rollback
+- Remove the corresponding entry from the configuration file and restart the client.
+- For temporary disabling, **entry removal** is recommended rather than replacing `command` with an invalid command.
