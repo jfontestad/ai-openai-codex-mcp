@@ -9,9 +9,9 @@
 ## Summary
 
 - **Total Files to Translate:** 29 files (from language-analysis-report.md)
-- **Files Completed:** 7
-- **Current Phase:** Phase 2A (Medium Priority Documentation Files)
-- **Progress:** 100% complete (7 of 7 high priority files done)
+- **Files Completed:** 10
+- **Current Phase:** Phase 2A (Medium Priority Documentation Files) - IN PROGRESS
+- **Progress:** 67% complete (10 of 15 total high/medium priority files done)
 
 ---
 
@@ -35,12 +35,12 @@
 
 | File Path | Status | Translation Date | Issues/Notes | Backup Location |
 |-----------|---------|------------------|--------------|-----------------|
-| docs/changelog.md | ⏳ Pending | - | 30.18% Japanese - 40 lines | - |
-| docs/reference/environment-setup.md | ⏳ Pending | - | 29.69% Japanese - 164 lines | - |
-| docs/reference/installation.md | ⏳ Pending | - | 28.0% Japanese - 243 lines | - |
-| docs/reference/transports.md | ⏳ Pending | - | 27.69% Japanese - 110 lines | - |
-| docs/verification.md | ⏳ Pending | - | 23.18% Japanese - 143 lines | - |
-| docs/reference/config-reference.md | ⏳ Pending | - | 19.16% Japanese - 252 lines | - |
+| docs/changelog.md | ✅ Completed | 2025-01-08 | Change log - Complete translation | .backup/original-language/changelog.md.original |
+| docs/reference/environment-setup.md | ✅ Completed | 2025-01-08 | Environment setup - Complete translation | .backup/original-language/environment-setup.md.original |
+| docs/reference/installation.md | 🔄 In Progress | 2025-01-08 | Installation guide - Partial translation | .backup/original-language/installation.md.original |
+| docs/reference/transports.md | ⏳ Pending | - | Transport docs - Ready for translation | .backup/original-language/transports.md.original |
+| docs/verification.md | ⏳ Pending | - | Verification procedures - Ready for translation | - |
+| docs/reference/config-reference.md | ⏳ Pending | - | Config reference - Ready for translation | - |
 | src/debug/state.ts | ⏳ Pending | - | 6.28% Japanese - 47 lines | - |
 | src/mcp/protocol.ts | ⏳ Pending | - | 5.98% Japanese - 128 lines | - |
 | src/index.ts | ⏳ Pending | - | 5.09% Japanese - 157 lines | - |

@@ -3,7 +3,7 @@ import { isDebug } from "../debug/state.js";
 
 export type JsonRpcMessage = { [k: string]: any };
 
-let lineDelimitedMode = false; // Claude compatibility: Enable for line-delimited JSON communication
+let lineDelimitedMode = false; // Claude互換: 行区切りJSONでやり取りする場合に有効化
 export function enableLineDelimitedMode() { lineDelimitedMode = true; }
 
 export function writeMessage(msg: JsonRpcMessage): void {

@@ -1,19 +1,19 @@
 
-# Installation Instructions (Local / npm) — `docs/reference/installation.md`
-Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
+# インストール手順（ローカル / npm）— `docs/reference/installation.md`
+最終更新: 2025-08-15（Asia/Tokyo, AI確認）
 
-This document provides **complete procedures** for building and using **openai-responses-mcp** in local environments.
-**npm pinning** (we don't handle pnpm/yarn). For MCP client (Claude) registration, refer to the separate `client-setup-claude.md`.
+本ドキュメントは **openai-responses-mcp** をローカル環境で構築・利用するための**完全な手順**を記載します。  
+**npm 固定**（pnpm/yarn は扱いません）。MCP クライアント（Claude）側の登録は別紙 `client-setup-claude.md` を参照。
 
 ---
 
-## 1. Prerequisites
-- OS: macOS / Linux / Windows (PowerShell)
-- Node.js: **v20 or higher** (recommended: v24 series)
-- npm: Stable version bundled with Node
-- OpenAI API key (passed via environment variables)
+## 1. 前提条件
+- OS: macOS / Linux / Windows（PowerShell）
+- Node.js: **v20 以上**（推奨: v24 系）
+- npm: Node 同梱の安定版
+- OpenAI API キー（環境変数で渡す）
 
-> Version check
+> バージョン確認
 ```bash
 node -v
 npm -v
@@ -21,30 +21,30 @@ npm -v
 
 ---
 
-## 2. Minimal Configuration (Startup with Required Settings Only)
-- Required ENV: `OPENAI_API_KEY`
-- Startup (no YAML needed):
+## 2. 最小構成（必須設定のみで起動）
+- 必須ENV: `OPENAI_API_KEY`
+- 起動（YAML不要）:
 ```bash
 export OPENAI_API_KEY="sk-..."
 npx openai-responses-mcp@latest --stdio
 ```
-- Verification: If `initialize` and `tools/list` return from client (Claude), connectivity is OK.
+- 確認: クライアント（Claude）から `initialize` と `tools/list` が返れば疎通OK。
 
 ---
 
-## 2. Acquisition Methods
-### 2.1 Download and Extract ZIP from GitHub
+## 2. 取得方法
+### 2.1 GitHub から ZIP をダウンロードして展開
 ```
 openai-responses-mcp/
-  ├─ src/ ...            # TypeScript source
-  ├─ build/ ...          # Build artifacts (empty initially)
-  ├─ docs/ ...           # Documentation
+  ├─ src/ ...            # TypeScript ソース
+  ├─ build/ ...          # ビルド生成物（初回は空）
+  ├─ docs/ ...           # ドキュメント
   ├─ config/config.yaml.example
   ├─ package.json
   └─ tsconfig.json
 ```
 
-> Repository operation is optional. Here we assume ZIP extraction.
+> リポジトリ運用は任意。ここでは ZIP 展開を前提とします。
 
 ---
 

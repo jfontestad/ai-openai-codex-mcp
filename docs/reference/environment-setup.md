@@ -1,20 +1,20 @@
 
-# 環境セットアップ（ローカル開発・再現性）— `docs/reference/environment-setup.md`
-最終更新: 2025-08-15（Asia/Tokyo, AI確認）
+# Environment Setup (Local Development & Reproducibility) — `docs/reference/environment-setup.md`
+Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
-本ドキュメントは **openai-responses-mcp** をローカルで安定稼働させるための環境準備を、OS 別に具体化した手順です。  
-**npm 固定**。beta/alpha ツールは使いません。
+This document provides OS-specific concrete procedures for environment preparation to run **openai-responses-mcp** stably in local environments.
+**npm pinning**. We don't use beta/alpha tools.
 
 ---
 
-## 1. 要件
+## 1. Requirements
 - OS: macOS / Linux / Windows
-- Node.js: **v20 以上（推奨: v24 系）**
-- npm: Node 同梱の安定版
-- ネットワーク: `api.openai.com` への HTTPS アクセス
-- OpenAI API キーを **環境変数**で渡す（YAML に秘密は入れない）
+- Node.js: **v20 or higher (recommended: v24 series)**
+- npm: Stable version bundled with Node
+- Network: HTTPS access to `api.openai.com`
+- Pass OpenAI API key via **environment variables** (don't put secrets in YAML)
 
-> 確認:
+> Verification:
 ```bash
 node -v
 npm -v
@@ -22,29 +22,29 @@ npm -v
 
 ---
 
-## 2. Node.js の導入（代表パターン）
-- 既に Node が入っている場合はこの節をスキップ。  
-- 管理者権限が不要なユーザ領域インストールを推奨。
+## 2. Node.js Installation (Representative Patterns)
+- Skip this section if Node is already installed.
+- User-space installation without administrator privileges is recommended.
 
 ### 2.1 macOS
-- 公式インストーラ（.pkg）または Homebrew（`brew install node@20` 等）。  
-- PATH に `node` / `npm` が入っていることを確認。
+- Official installer (.pkg) or Homebrew (`brew install node@20` etc.).
+- Verify that `node` / `npm` are in PATH.
 
 ### 2.2 Linux
-- ディストリに付属の安定版（apt/dnf 等）または公式バイナリ。  
-- ビルドが必要な場合に備えて `build-essential` 相当を導入。
+- Distribution-bundled stable version (apt/dnf etc.) or official binaries.
+- Install `build-essential` equivalent in case building is needed.
 
 ### 2.3 Windows
-- 公式インストーラ（.msi）。PowerShell を「管理者として実行」で起動して確認。
+- Official installer (.msi). Launch PowerShell as "Run as Administrator" for verification.
 
-> いずれの OS でも `node -v` がエラー無く表示されれば OK。
+> For any OS, if `node -v` displays without errors, you're OK.
 
 ---
 
-## 3. シェル環境に API キーを設定
-**必須**。セキュアに扱う。YAML/JSON へ直接書かない。
+## 3. Set API Key in Shell Environment
+**Required**. Handle securely. Don't write directly to YAML/JSON.
 
-### 3.1 一時的（現在のターミナルのみ）
+### 3.1 Temporary (Current Terminal Only)
 **bash/zsh (macOS/Linux)**
 ```bash
 export OPENAI_API_KEY="sk-..."
@@ -55,7 +55,7 @@ export OPENAI_API_KEY="sk-..."
 $env:OPENAI_API_KEY="sk-..."
 ```
 
-### 3.2 永続化（次回以降も有効）
+### 3.2 Persistent (Effective for Future Sessions)
 **zsh**
 ```bash
 echo 'export OPENAI_API_KEY="sk-..."' >> ~/.zshrc
@@ -71,15 +71,15 @@ source ~/.bashrc
 **PowerShell**
 ```powershell
 [System.Environment]::SetEnvironmentVariable("OPENAI_API_KEY","sk-...","User")
-# 新しい PowerShell を開いて反映を確認
+# Open new PowerShell to verify reflection
 ```
 
-> ENV 名はデフォルトで `OPENAI_API_KEY`。`docs/reference/config-reference.md` の `openai.api_key_env` を変えた場合は、その名称で設定。
+> ENV name defaults to `OPENAI_API_KEY`. If you changed `openai.api_key_env` in `docs/reference/config-reference.md`, set using that name.
 
 ---
 
-## 4. プロキシ/企業ネットワークの設定（必要時）
-社内プロキシ経由の場合は、以下の環境変数で HTTPS 経路を指定します。
+## 4. Proxy/Corporate Network Setup (When Required)
+When using corporate proxy, specify HTTPS path with the following environment variables.
 
 ```bash
 export HTTPS_PROXY="http://proxy.example.com:8080"
@@ -94,33 +94,33 @@ $env:HTTP_PROXY=$env:HTTPS_PROXY
 $env:NO_PROXY="localhost,127.0.0.1"
 ```
 
-> 社内 CA を利用する環境では、OS/Node の信頼ストアに証明書を正しく登録してください。
+> For environments using corporate CA, please properly register certificates in OS/Node trust store.
 
 ---
 
-## 5. プロジェクトの初期化（ローカル）
+## 5. Project Initialization (Local)
 ```bash
-# 依存取得 & ビルド
+# Get dependencies & build
 npm ci
 npm run build
 
-# サニティチェック
+# Sanity check
 node build/index.js --help
 node build/index.js --version
 node build/index.js --show-config 2> effective-config.json
 ```
 
-**期待**: エラー無しで実行でき、`--show-config` のstderr出力（`effective-config.json`）に `effective.model_profiles.answer.model` と `sources` が表示される。
+**Expected**: Executes without errors, and `--show-config` stderr output (`effective-config.json`) displays `effective.model_profiles.answer.model` and `sources`.
 
 ---
 
-## 6. 設定（任意）
-YAML は任意。無くても動きます。置く場合の既定パス：
+## 6. Configuration (Optional)
+YAML is optional. Works without it. Default paths when placed:
 
-- macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`  
+- macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`
 - Windows: `%APPDATA%\openai-responses-mcp\config.yaml`
 
-最小例：
+Minimal example:
 ```yaml
 model_profiles:
   answer:
@@ -129,17 +129,17 @@ model_profiles:
     verbosity: medium
 ```
 
-**優先順位**: CLI > ENV > YAML > TS（配列は置換・オブジェクトは深いマージ）。
+**Priority**: CLI > ENV > YAML > TS (arrays are replaced, objects are deep merged).
 
 ---
 
-## 7. 検証（MCP レイヤ）
+## 7. Verification (MCP Layer)
 ```bash
-# LDJSON スモーク（OpenAI API鍵不要）
+# LDJSON smoke test (OpenAI API key not required)
 npm run mcp:smoke:ldjson | tee /tmp/mcp-smoke-ldjson.out
 grep -c '"jsonrpc":"2.0"' /tmp/mcp-smoke-ldjson.out
 
-# Content-Length スモーク（要 OPENAI_API_KEY）
+# Content-Length smoke test (requires OPENAI_API_KEY)
 export OPENAI_API_KEY="sk-..."
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 grep -c '^Content-Length:' /tmp/mcp-smoke.out
@@ -147,18 +147,18 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out
 
 ---
 
-## 8. よくあるエラーと対処
-| 事象 | 原因 | 対処 |
+## 8. Common Errors and Solutions
+| Issue | Cause | Solution |
 |---|---|---|
-| `Missing API key` | 環境変数未設定 | `export OPENAI_API_KEY=...` |
-| `Cannot find module build/index.js` | ビルド未実行 | `npm run build` |
-| `Content-Length` 不一致 | フレーミング不備/改行混入 | 再ビルド、`mcp:smoke` 実行 |
-| 429/5xx 多発 | API 側混雑/制限 | リトライ上限/タイムアウトを調整 |
-| プロキシ関連 TLS 失敗 | 社内 CA 未登録 | OS/Node の信頼ストアに登録 |
+| `Missing API key` | Environment variable not set | `export OPENAI_API_KEY=...` |
+| `Cannot find module build/index.js` | Build not executed | `npm run build` |
+| `Content-Length` mismatch | Framing defect/newline contamination | Rebuild, run `mcp:smoke` |
+| 429/5xx frequent | API side congestion/limits | Adjust retry limits/timeouts |
+| Proxy-related TLS failure | Corporate CA not registered | Register in OS/Node trust store |
 
 ---
 
-## 9. 再現性のための推奨
-- Node メジャーを固定（例: 全員 v24 系で統一）。
-- `--show-config` のstderr出力を保存し、差分監視（CI）で逸脱を検知。
-- 秘密は ENV のみ。ログ/設定ファイルへ**絶対に**残さない。
+## 9. Recommendations for Reproducibility
+- Pin Node major version (e.g., everyone unified on v24 series).
+- Save `--show-config` stderr output and detect deviations with diff monitoring (CI).
+- Secrets only in ENV. **Never** leave in logs/config files.
