@@ -1,103 +1,103 @@
 
-# Canonical Specification — `docs/spec.md`
-Last Updated: 2025-08-24 (Asia/Tokyo, AI confirmed)  
-Version: **v0.5.x**
+# 正準仕様（Canonical Spec）— `docs/spec.md`
+最終更新: 2025-08-24（Asia/Tokyo, AI確認）  
+バージョン: **v0.5.x**
 
-This document is the **sole canonical specification** for **openai-responses-mcp**.  
-Implementation, operation, and testing must conform to this specification.
-
----
-
-## 0. Background & Purpose
-- Provide a **lightweight** server for MCP clients like Claude Code to get search-enabled responses using the **OpenAI Responses API**.
-- **Always allow** `tools: [{"type":"web_search"}]` for every request, letting the **model autonomously decide** whether to actually perform searches.
-- Return **structured** responses (text, `used_search`, `citations[]`, `model` as required fields) to enhance client-side reusability.
-- Support switching to compatible models via configuration (limited to Responses API + web_search compatible models). Policy and threshold changes can also be flexibly configured.
-
-Non-goals: Full browser/crawler implementation, immediate implementation of non-stdio transports, client-side orchestration.
+本ドキュメントは **openai-responses-mcp** の**唯一の正準仕様**です。  
+実装・運用・テストは、必ず本仕様に合致していることを条件とします。
 
 ---
 
-## 1. System Boundaries & Naming
-- Product name: **openai-responses-mcp** (same for package name/CLI name)
-- Server type: **MCP server**
-- Connection method: **stdio** (JSON-RPC compatible + `Content-Length` framing)
-- Main tools: **`answer` / `answer_detailed` / `answer_quick`**
-- Reasoning core: **OpenAI Responses API** (JS SDK `openai`)
-- Search tool: **`web_search`** (Responses built-in tool, always allowed)
+## 0. 背景・目的
+- Claude Code などの MCP クライアントから、**OpenAI Responses API** を用いた検索付き回答を得るための**軽量な**サーバを提供する。
+- 毎リクエストで `tools: [{"type":"web_search"}]` を**常時許可**し、実際に検索を行うかは**モデル側で自律判断**させる。
+- 返却は**構造化**（本文・`used_search`・`citations[]`・`model` を必須）し、クライアント側での再利用性を高める。
+- 設定で互換モデルへ切替可能（Responses API＋web_search対応モデルに限る）。ポリシー・閾値の変更も設定で柔軟に行える。
+
+非目標：フルブラウザ/クローラ実装、非 stdio トランスポートの即時実装、クライアント側のオーケストレーション。
 
 ---
 
-## 2. Transport Specification (stdio)
-### 2.1 Physical Layer
-- Uses standard input/output (`stdin`/`stdout`). UTF-8, no BOM.
-- Each message is framed as follows (preferred):
+## 1. システム境界・命名
+- プロダクト名：**openai-responses-mcp**（パッケージ名/CLI 名も同一）
+- サーバ種別：**MCP server**
+- 接続方式：**stdio**（JSON-RPC 互換 + `Content-Length` フレーミング）
+- 主要ツール：**`answer` / `answer_detailed` / `answer_quick`**
+- 推論コア：**OpenAI Responses API**（JS SDK `openai`）
+- 検索ツール：**`web_search`**（Responses の内蔵ツール、常時許可）
+
+---
+
+## 2. トランスポート仕様（stdio）
+### 2.1 物理レイヤ
+- 標準入出力（`stdin`/`stdout`）を使用。UTF-8、BOM なし。
+- 各メッセージは以下でフレーミング（優先）：
   ```http
   Content-Length: <bytes>\r\n
   \r\n
   <JSON-utf8>
   ```
-  - `<bytes>` is the UTF-8 byte length of the JSON.
-  - Multiple messages can be concatenated.
-  - Compatibility mode: If client doesn't send Content-Length, line-delimited JSON (NDJSON-style) is also accepted, and subsequent responses are returned line-delimited.
+  - `<bytes>` は JSON の UTF-8 バイト長。
+  - 複数メッセージを連結可能。
+  - 互換モード：クライアントが Content-Length を送らない場合、行区切りJSON（NDJSON風）も受理し、以後の応答は行区切りで返す。
 
-### 2.2 Logical Layer
-- JSON-RPC 2.0 compatible. Includes `"jsonrpc":"2.0"`.
-- Supported methods:
+### 2.2 論理レイヤ
+- JSON-RPC 2.0 互換。`"jsonrpc":"2.0"` を含む。
+- サポートメソッド：
   - `initialize`
   - `tools/list`
   - `tools/call`
-  - `ping` (optional, for health checks. Returns empty object on success)
+  - `ping`（任意・ヘルスチェック用。空オブジェクトで成功応答）
 
-### 2.3 Initialization (Example)
-**Receive**
+### 2.3 初期化（例）
+**受信**
 ```http
 Content-Length: 118
 
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{}}}
 ```
-**Send**
+**送信**
 ```http
 Content-Length: 142
 
 {"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"openai-responses-mcp","version":"<pkg.version>"}}}
 ```
 
-### 2.4 Tool List (Example)
+### 2.4 ツール一覧（例）
 ```http
 Content-Length: 52
 
 {"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}
 ```
-**Send**
+**送信**
 ```http
 Content-Length: 458
 
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"answer","description":"Execute Web search as needed and return responses with evidence (with sources)","inputSchema":{"type":"object","properties":{"query":{"type":"string"},"recency_days":{"type":"number"},"max_results":{"type":"number"},"domains":{"type":"array","items":{"type":"string"}},"style":{"enum":["summary","bullets","citations-only"]}},"required":["query"]}}]}} 
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"answer","description":"必要に応じてWeb検索を実行し、根拠（出典付き）で回答を返す","inputSchema":{"type":"object","properties":{"query":{"type":"string"},"recency_days":{"type":"number"},"max_results":{"type":"number"},"domains":{"type":"array","items":{"type":"string"}},"style":{"enum":["summary","bullets","citations-only"]}},"required":["query"]}}]}} 
 ```
 
-### 2.5 Tool Call (Example)
-**Receive**
+### 2.5 ツール呼び出し（例）
+**受信**
 ```http
 Content-Length: 156
 
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"answer","arguments":{"query":"What does HTTP 404 mean?","style":"summary"}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"answer","arguments":{"query":"HTTP 404 の意味は？","style":"summary"}}}
 ```
-**Send (Success)**
+**送信（成功）**
 ```http
 Content-Length: 204
 
 {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"{\"answer\":\"...\",\"used_search\":false,\"citations\":[],\"model\":\"gpt-5\"}"}]}}
 ```
 
-### 2.6 ping (Optional)
-**Receive (Example)**
+### 2.6 ping（任意）
+**受信（例）**
 ```http
 Content-Length: 36
 
 {"jsonrpc":"2.0","id":99,"method":"ping"}
 ```
-**Send (Example)**
+**送信（例）**
 ```http
 Content-Length: 28
 
@@ -106,18 +106,18 @@ Content-Length: 28
 
 ---
 
-## 3. Tool Specification (Multi-profile Support)
+## 3. ツール仕様（マルチプロファイル対応）
 
-### 3.0 Tool Overview
-This system provides **3 dedicated tools** for different use cases:
+### 3.0 ツール概要
+本システムは用途に応じて**3つの専用ツール**を提供する：
 
-| Tool Name | Purpose | Configuration Profile | Features |
-|-----------|---------|----------------------|----------|
-| `answer` | Standard responses (baseline) | `model_profiles.answer` | Balanced responses. **Required configuration** |
-| `answer_detailed` | Detailed analysis | `model_profiles.answer_detailed` | Comprehensive research and deep analysis. Defaults to `answer` if omitted |
-| `answer_quick` | Fast responses | `model_profiles.answer_quick` | Quick and concise responses. Defaults to `answer` if omitted |
+| ツール名 | 用途 | 設定プロファイル | 特徴 |
+|---------|------|----------------|------|
+| `answer` | 標準回答（基準） | `model_profiles.answer` | バランスの取れた回答。**必須設定** |
+| `answer_detailed` | 詳細分析 | `model_profiles.answer_detailed` | 包括的な調査と深い分析。省略時は`answer`で代替 |
+| `answer_quick` | 高速回答 | `model_profiles.answer_quick` | 迅速で簡潔な回答。省略時は`answer`で代替 |
 
-MCP clients like Claude Code automatically select the optimal tool based on user instructions.
+Claude Code等のMCPクライアントは、ユーザーの指示内容に基づいて最適なツールを自動選択する。
 
 ### 3.0.1 プロファイル設定の統一仕様
 マルチプロファイル設定は以下の統一ルールに従う：
