@@ -119,39 +119,39 @@ This system provides **3 dedicated tools** for different use cases:
 
 MCP clients like Claude Code automatically select the optimal tool based on user instructions.
 
-### 3.0.1 プロファイル設定の統一仕様
-マルチプロファイル設定は以下の統一ルールに従う：
+### 3.0.1 Unified Profile Configuration Specification
+Multi-profile configuration follows these unified rules:
 
-- **`answer`プロファイルは必須**：未設定時は起動時エラー
-- **他プロファイルは`answer`で代替**：未設定時は`answer`の設定を使用
-- **従来設定は廃止**：`openai.model.default`等は使用しない
+- **`answer` profile is required**: Startup error if not configured
+- **Other profiles default to `answer`**: Uses `answer` configuration when not set
+- **Legacy configuration is deprecated**: No longer use `openai.model.default`, etc.
 
-**設定例**：
+**Configuration Example**:
 ```yaml
 model_profiles:
-  answer:           # 必須プロファイル
+  answer:           # Required profile
     model: gpt-5-mini
     reasoning_effort: medium
     verbosity: medium
-  answer_detailed:  # オプション（省略時はanswerで代替）
+  answer_detailed:  # Optional (defaults to answer if omitted)
     model: gpt-5
     reasoning_effort: high
     verbosity: high
-  # answer_quick は省略 → answer の設定で動作
+  # answer_quick is omitted → operates with answer configuration
 ```
 
-**最小設定**：
+**Minimal Configuration**:
 ```yaml
 model_profiles:
-  answer:  # 必須のみ設定
+  answer:  # Configure required profile only
     model: gpt-5-mini
     reasoning_effort: medium
     verbosity: medium
-# 全ツールがこの設定で動作
+# All tools operate with this configuration
 ```
-### 3.1 各ツールの仕様
+### 3.1 Individual Tool Specifications
 
-#### 3.1.1 `answer` - 標準回答ツール（基準・必須）
+#### 3.1.1 `answer` - Standard Response Tool (Baseline・Required)
 ```json
 {
   "name": "answer",
@@ -170,7 +170,7 @@ model_profiles:
 }
 ```
 
-#### 3.1.2 `answer_detailed` - 詳細分析ツール（オプション）
+#### 3.1.2 `answer_detailed` - Detailed Analysis Tool (Optional)
 ```json
 {
   "name": "answer_detailed",
@@ -189,7 +189,7 @@ model_profiles:
 }
 ```
 
-#### 3.1.3 `answer_quick` - 高速回答ツール（オプション）
+#### 3.1.3 `answer_quick` - Fast Response Tool (Optional)
 ```json
 {
   "name": "answer_quick", 
@@ -209,9 +209,9 @@ model_profiles:
 - **複雑な分析・比較**: `answer_detailed`を選択
 - **簡潔な回答要求**: `answer_quick`を選択
 
-### 3.2 出力契約（MCP テキスト内 JSON）
-- `tools/call` のレスポンスは、`content[0].text` に **JSON 文字列**を格納する。
-- その JSON は下記スキーマに**厳密に**従う：
+### 3.2 Output Contract (JSON within MCP Text)
+- `tools/call` responses store **JSON string** in `content[0].text`.
+- The JSON must **strictly** follow this schema:
 ```json
 {
   "answer": "string",
@@ -226,35 +226,35 @@ model_profiles:
   "model": "used model id (e.g., gpt-5)"
 }
 ```
-- **順序規約（回答本文側）**：本文 →（必要に応じて）箇条書き →（web_search 使用時のみ）`Sources:` で URL + ISO 日付を併記。
+- **Order convention (response body side)**: Main text → (if needed) bullet points → (only when web_search is used) `Sources:` with URLs + ISO dates.
 
-### 3.3 検索判定
-- `used_search = true` とする条件：
-  - Responses の注釈に `url_citation` が 1 件以上含まれる **または**
-  - `web_search` の呼び出しが確認できる場合
-- 出典数は `policy.max_citations` を上限（1～10）。
-
----
-
-## 4. モデル指示（System Policy）
-- **必須**：Responses API の `instructions` には **コード側SSOT（`src/policy/system-policy.ts` の `SYSTEM_POLICY`）**を**そのまま**与える（改変禁止）。
-- 版識別：`SYSTEM_POLICY_REV` を参照（例: `2025-08-09 v0.4.0`）。
-- 役割：web_search の判断、出典・日付の扱い、相対日付の絶対化（Asia/Tokyo）、多言語（日本語優先）などを規定。
+### 3.3 Search Determination
+- Conditions for `used_search = true`:
+  - Responses annotation contains 1 or more `url_citation` **OR**
+  - `web_search` calls can be confirmed
+- Number of sources is capped by `policy.max_citations` (1-10).
 
 ---
 
-## 5. 構成・設定
-### 5.1 優先順位（厳守）
+## 4. Model Instructions (System Policy)
+- **Required**: Responses API `instructions` must be given **exactly** from **code-side SSOT (`src/policy/system-policy.ts`'s `SYSTEM_POLICY`)** (no modification allowed).
+- Version identification: Reference `SYSTEM_POLICY_REV` (e.g., `2025-08-09 v0.4.0`).
+- Role: Defines web_search judgment, source & date handling, relative date absolutization (Asia/Tokyo), multilingual support (Japanese priority), etc.
+
+---
+
+## 5. Configuration & Settings
+### 5.1 Priority Order (Must Follow)
 - **CLI > ENV > YAML > TS defaults**
-  - オブジェクトは**深いマージ**
-  - 配列は**置換**（連結しない）
+  - Objects use **deep merge**
+  - Arrays use **replacement** (no concatenation)
 
-### 5.2 YAML 既定パス
+### 5.2 YAML Default Paths
 - macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`
 - Windows: `%APPDATA%\openai-responses-mcp\config.yaml`
-- `--config <path>` が指定された場合はそれを最優先する。存在しない場合はスキップしエラーにしない。
+- When `--config <path>` is specified, it takes highest priority. If it doesn't exist, skip without error.
 
-### 5.3 代表スキーマ
+### 5.3 Representative Schema
 ```yaml
 openai:
   api_key_env: OPENAI_API_KEY
@@ -265,23 +265,23 @@ request: { timeout_ms: 120000, max_retries: 3 }
 responses: { stream: false, json_mode: false }
 
 model_profiles:
-  answer:           # 必須・基準プロファイル
+  answer:           # Required baseline profile
     model: gpt-5-mini
     reasoning_effort: medium
     verbosity: medium
     
-  answer_detailed:  # オプション・詳細分析用
+  answer_detailed:  # Optional - for detailed analysis
     model: gpt-5
     reasoning_effort: high
     verbosity: high
     
-  answer_quick:     # オプション・高速回答用
+  answer_quick:     # Optional - for fast responses
     model: gpt-5-nano
     reasoning_effort: minimal
     verbosity: low
 
 policy:
-  search_triggers: ["今日","現在","最新","速報","価格","値段","リリース","バージョン","セキュリティ","脆弱性","天気","為替","ニュース","サポート期限"]
+  search_triggers: ["today","now","latest","breaking","price","cost","release","version","security","vulnerability","weather","exchange","news","EOL"]
   prefer_search_when_unsure: true
   max_citations: 3
   requery_attempts: 1
@@ -293,10 +293,10 @@ search:
 server: { transport: stdio, debug: false, debug_file: null, show_config_on_start: false }
 ```
 
-### 5.4 主要 ENV
-| ENV | 意味 |
+### 5.4 Main Environment Variables
+| ENV | Meaning |
 |---|---|
-| `OPENAI_API_KEY` | 認証（`openai.api_key_env` が指す ENV 名） |
+| `OPENAI_API_KEY` | Authentication (ENV name pointed by `openai.api_key_env`) |
 | `OPENAI_API_TIMEOUT` | `request.timeout_ms` |
 | `OPENAI_MAX_RETRIES` | `request.max_retries` |
 | `SEARCH_RECENCY_DAYS` | `search.defaults.recency_days` |
@@ -308,16 +308,16 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 | `MODEL_QUICK` | `model_profiles.answer_quick.model` |
 | `DEBUG` | `server.debug`/`server.debug_file` |
 
-### 5.5 CLI
+### 5.5 CLI Options
 ```
---stdio                          # stdio サーバ起動（Claude 連携時は必須）
---show-config                    # 実効設定（sources 付き）を JSON でstderrに出力
---config <path>                  # YAML 明示パス
---model <id>                     # model_profiles.answer.model を一時上書き
---help / --version               # そのまま
+--stdio                          # Start stdio server (required for Claude integration)
+--show-config                    # Output effective configuration (with sources) as JSON to stderr
+--config <path>                  # Explicit YAML path
+--model <id>                     # Temporarily override model_profiles.answer.model
+--help / --version               # As is
 ```
 
-### 5.6 モデル互換性と機能適用範囲
+### 5.6 Model Compatibility and Feature Application Scope
 - `verbosity` の適用: モデルIDが `gpt-5` 系（接頭辞が `gpt-5`）のときのみ適用。
 - `reasoning_effort` の適用: `gpt-5` / `o3` / `o4` 系モデルで適用。それ以外では無視されるか、OpenAI側でエラーになり得る。
 - 非対応モデルを指定した場合: OpenAI Responses API 側の検証でエラーとなる可能性があるため、対応モデルIDのみを指定すること。
@@ -325,7 +325,7 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ---
 
-## 6. 実行フロー（マルチプロファイル対応）
+## 6. Execution Flow (Multi-profile Support)
 1. **ツール判定**：MCPクライアントが`answer`/`answer_detailed`/`answer_quick`から選択。
 2. **プロファイル決定**：選択されたツール名に対応する`model_profiles`設定を取得。未設定の場合はエラー。
 3. **入力検証**: 各ツールのinputSchemaに従って検証。
@@ -372,14 +372,14 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ---
 
-## 7. リトライ戦略
+## 7. Retry Strategy
 - リトライ対象：HTTP 429 / 5xx / Abort（タイムアウト）
 - 戦略：指数バックオフ（実装裁量、合計 `request.max_retries` 回まで）
 - 失敗時の処理：エラーとして `tools/call` に返す（`code:-32050` など実装定義）。
 
 ---
 
-## 8. セキュリティ / ログ
+## 8. Security / Logging
 - API キーは**ENV からのみ**読み、YAML/JSON へ書かない。
 - ログに**回答本文やキーをフルで残さない**。必要最小のメタ情報（モデル名/レイテンシ/再試行回数）に限定。
 - プロキシ・私設ゲートウェイ利用は組織方針に従う。
@@ -412,21 +412,21 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ---
 
-## 9. 多言語・日付規則
+## 9. Multilingual & Date Rules
 - 日本語入力→日本語応答。英語入力→英語応答。
 - 相対日付（今日/昨日/明日）は **Asia/Tokyo** で**絶対日付**化（`YYYY-MM-DD`）。
 - 出典には可能な限り ISO 日付を併記（公開日が無い場合は **アクセス日**）。
 
 ---
 
-## 10. 完了の定義（DoD）
+## 10. Definition of Done (DoD)
 - 「HTTP 404 の意味」は `used_search=false`、`citations=[]` で返る。
 - 「本日 YYYY-MM-DD の東京の天気」は `used_search=true`、`citations.length>=1`、本文に URL + ISO 日付併記。
 - `npm run mcp:smoke` が `initialize → tools/list → tools/call(answer)` の 3 応答を返す。
 
 ---
 
-## 11. 互換性ポリシー / バージョニング
+## 11. Compatibility Policy / Versioning
 - セマンティックバージョニング：
   - 破壊的変更 → **MAJOR**
   - 新機能追加（後方互換）→ **MINOR**
@@ -435,14 +435,14 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ---
 
-## 12. 参考ファイル（仕様の一部）
+## 12. Reference Files (Part of Specification)
 - `docs/reference/system-policy.md` — **Instructions 本文**（貼付用・改変禁止）
 - `docs/reference/config-reference.md` — 設定スキーマと優先順位の詳細
 - `config/config.yaml.example` — 設定例（YAML）
 
 ---
 
-## 13. 非機能要件（抜粋）
+## 13. Non-functional Requirements (Excerpt)
 - **安定運用**：beta/alpha を避け、**正式リリース**された SDK/ランタイムのみ使用（npm/Node）。
 - **再現性**：`--show-config` による実効設定の保存を推奨（`docs/reference/reproducibility.md`）。
 - **セキュリティ**：秘密は ENV のみ、ログ最小化。
