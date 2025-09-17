@@ -90,7 +90,7 @@ export function startServer(cfg: Config) {
           logInfo(`tools/call name=${name} argsKeys=[${keys.join(',')}] queryLen=${qlen ?? '-'}`);
         } catch {}
       }
-      // プロファイル名として直接使用
+      // Use directly as profile name
       if (name && name in TOOL_DEFINITIONS) {
         try {
           // リクエスト毎の AbortController を準備（キャンセル通知で中断）
@@ -114,7 +114,7 @@ export function startServer(cfg: Config) {
           let etype: any = '-';
           let ename: any = '-';
           let emsg: string = e?.message || String(e);
-          // キャンセル後のエラーは握りつぶし（応答しない）
+          // Suppress errors after cancellation (no response)
           const cur = inflight.get(msg.id);
           const aborted = cur?.cancelled || cur?.controller?.signal?.aborted;
           if (aborted) {
@@ -145,7 +145,7 @@ export function startServer(cfg: Config) {
       return;
     }
 
-    // キャンセル通知（通知なので応答不要）
+    // Cancellation notification (notification only, no response needed)
     if (msg.method === "notifications/cancelled") {
       try {
         const rid = (msg?.params as any)?.requestId;

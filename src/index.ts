@@ -36,7 +36,7 @@ function parseArgs(argv: string[]): Opts {
     else if (a === "--config") { o.configPath = argv[++i]; }
     else if (a.startsWith("--config=")) { o.configPath = a.split("=",2)[1]; }
     else if (a === "--debug") {
-      // --debug に続くトークンがパス（先頭が'-'以外）なら取り込む
+      // If token following --debug is a path (not starting with '-'), incorporate it
       const next = argv[i+1];
       if (next && !next.startsWith("-")) { o.debug = true; o.debugPath = next; i++; }
       else { o.debug = true; }
@@ -82,7 +82,7 @@ async function main() {
 
   // --show-config の扱い：
   // - 単独指定時: stderr にJSON出力し、0終了
-  // - --stdio と併用時: stderr にJSON出力し、そのままサーバ継続（stdoutは汚さない）
+  // - When used with --stdio: Output JSON to stderr and continue server (don't pollute stdout)
   let showConfigPrinted = false;
   if (args.showConfig) {
     try {
@@ -91,7 +91,7 @@ async function main() {
         sources: loaded.sources,
         effective: loaded.effective
       };
-      // stdout を汚さないため、stderr に出力
+      // Output to stderr to avoid polluting stdout
       console.error(JSON.stringify(out, null, 2));
       showConfigPrinted = true;
     } catch (e: any) {
@@ -114,7 +114,7 @@ async function main() {
       process.env.DEBUG = args.debugPath ? args.debugPath : '1';
     }
 
-    // 2) ENV（DEBUG）が存在し、CLIで未指定なら反映
+    // 2) If ENV (DEBUG) exists and not specified in CLI, apply it
     if (!args.debug && process.env.DEBUG && process.env.DEBUG.length > 0) {
       const v = String(process.env.DEBUG);
       loaded.effective.server.debug = true;

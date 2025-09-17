@@ -67,14 +67,14 @@ function extractCitations(resp: any): { citations: Citation[]; used: boolean } {
   return { citations: [...set.values()], used };
 }
 
-// `signal` は MCP キャンセルを伝搬するために使用
+// `signal` is used to propagate MCP cancellation
 export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: string, signal?: AbortSignal) {
   const client = createClient(cfg);
-  // SSOT（src/policy/system-policy.ts）を既定とし、必要に応じて外部policy.mdを合成
+  // SSOT (src/policy/system-policy.ts) as default, compose external policy.md if needed
   const system = resolveSystemPolicy(cfg);
   const userText = `${input.query}${toHints(input, cfg)}`;
 
-  // プロファイル設定を取得（指定がない場合はanswerproveイル使用）
+  // Get profile configuration (use answer profile if none specified)
   const effectiveProfileName = profileName || 'answer';
   const profile = cfg.model_profiles[effectiveProfileName as keyof typeof cfg.model_profiles] || cfg.model_profiles.answer;
   
@@ -82,7 +82,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
     throw new Error(`model_profiles.${effectiveProfileName} is required`);
   }
 
-  // モデル互換性チェック
+  // Model compatibility check
   const supportsVerbosity = profile.model.startsWith('gpt-5');
   const supportsReasoningEffort = profile.model.startsWith('gpt-5') ||
                                   profile.model.startsWith('o3') ||
@@ -95,7 +95,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
     tools: [{ type: "web_search" }]
   };
 
-  // プロファイル設定を適用（モデル対応時のみ）
+  // Apply profile settings (only for supported models)
   if (supportsVerbosity) {
     requestBody.text = { verbosity: profile.verbosity };
   }
@@ -104,7 +104,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
     requestBody.reasoning = { effort };
   }
 
-  // DEBUG ログ: プロファイル・対応機能・送信要約（単一判定）
+  // DEBUG log: profile, supported features, transmission summary (unified determination)
   if (isDebug()) {
     try {
       const toolsOn = Array.isArray(requestBody.tools) && requestBody.tools.some((t: any) => t?.type === 'web_search');

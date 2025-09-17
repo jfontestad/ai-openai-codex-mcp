@@ -121,9 +121,9 @@ export function loadConfig(opts: LoadOptions): Loaded {
     for (const k of keys) if (opts.env[k] !== undefined) envTouched.push(k);
   }
 
-  // CLIからのモデル上書きはサポートしない（YAMLに統一）
+  // Model override from CLI not supported (unified in YAML)
 
-  // 設定値のバリデーション（フェイルファスト）
+  // Configuration value validation (fail fast)
   validateConfig(current);
 
   return {

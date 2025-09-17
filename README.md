@@ -171,7 +171,7 @@ npm run mcp:smoke | tee /tmp/mcp-smoke.out
 grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 以上でOK
 ```
 
-### 3) ローカル起動（stdio）
+### 3) Local Startup (stdio)
 ```bash
 export OPENAI_API_KEY="sk-..."
 node build/index.js --stdio --debug ./_debug.log
@@ -195,7 +195,7 @@ npm run mcp:smoke:ldjson   # NDJSON互換の疎通確認
 ### npm パッケージ確認と公開
 ```bash
 npm pack --dry-run    # 同梱物を確認（build/ と README/LICENSE/サンプルのみ）
-npm publish           # 公開（スコープなし）
+npm publish           # Publish (no scope)
 ```
 
 ---
