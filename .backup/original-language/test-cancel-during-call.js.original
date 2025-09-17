@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Test purpose: Send notifications/cancelled immediately after tools/call execution,
-// and verify that result/error for that id is not output (suppressed).
-// If OPENAI_API_KEY is not set, skip (exit 0).
+// テスト目的: tools/call 実行直後に notifications/cancelled を送り、
+// 当該 id の result/error が出力されない（抑止される）ことを確認するスモーク。
+// OPENAI_API_KEY が未設定の場合はスキップ（exit 0）。
 
 import { spawn } from 'node:child_process';
 

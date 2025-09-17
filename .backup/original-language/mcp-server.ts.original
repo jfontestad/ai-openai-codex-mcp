@@ -30,7 +30,7 @@ function pkgVersion(): string {
     return "0.0.0";
   }
 }
-// Debug determination unified to common isDebug()
+// デバッグ判定は共通の isDebug() に統一
 
 function sendResult(id: number | string, result: any) {
   writeMessage({ jsonrpc: "2.0", id, result });
@@ -41,9 +41,9 @@ function sendError(id: number | string, code: number, message: string, data?: an
 
 export function startServer(cfg: Config) {
   if (isDebug()) logInfo(`server.start pid=${process.pid}`);
-  // In-flight requests: id -> { controller, cancelled }
+  // 進行中リクエスト: id -> { controller, cancelled }
   const inflight = new Map<number | string, { controller: AbortController; cancelled: boolean }>();
-  // Startup summary (stderr, doesn't pollute MCP stdout)
+  // 起動時要約（stderr、MCPのstdoutを汚さない）
   try {
     const srv: any = (cfg as any).server || {};
     const mp: any = (cfg as any).model_profiles?.answer || {};

@@ -1,52 +1,52 @@
 
-# Verification Procedures (E2E) — openai-responses-mcp
+# 検証手順（E2E）— openai-responses-mcp
 
-Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
-This file shows local reproduction and verification procedures. Output prioritizes forms that allow **machine inspection of JSON**, with `jq` verification examples also included.
+最終更新: 2025-08-15（Asia/Tokyo, AI確認）  
+このファイルはローカルでの再現・確認手順を示します。出力は **JSON を機械的に検査**できる形を優先し、`jq` での確認例も併記します。
 
 ---
 
-## 0. Prerequisites
-- Node.js 20 or higher (e.g., v24 series), npm
-- Dependencies and build (reproducibility focused):
+## 0. 前提条件
+- Node.js 20 以上（例: v24 系）、npm
+- 依存とビルド（再現性重視）:
   ```bash
   npm ci
   npm run build
   ```
-- Note: Some verification steps that actually call OpenAI API require `OPENAI_API_KEY`.
+- 注意: OpenAI API を実際に呼ぶ検証（任意の一部ステップ）では `OPENAI_API_KEY` が必要です。
 
 ---
 
-## 1. Sanity Check (CLI)
-### 1-1 Version and Help
+## 1. サニティチェック（CLI）
+### 1-1 版数とヘルプ
 ```bash
 node build/index.js --version
 node build/index.js --help
 ```
 
-### 1-2 Effective Configuration (Priority: CLI > ENV > YAML > TS)
+### 1-2 実効設定（優先順位: CLI > ENV > YAML > TS）
 ```bash
-# Raw state
+# 素の状態
 node build/index.js --show-config 2> effective.json; cat effective.json | jq '.version, .sources, .effective.model_profiles.answer.model'
 ```
-**Expected**: Contains `sources.ts_defaults=true`, and `effective.model_profiles.answer.model` is default (`gpt-5-mini`).
+**期待**: `sources.ts_defaults=true` が含まれ、`effective.model_profiles.answer.model` が既定（`gpt-5-mini`）。
 
 ---
 
-## 2. MCP stdio Smoke Test (LDJSON, no API key required)
+## 2. MCP stdio スモーク（LDJSON, API鍵不要）
 ```bash
 npm run mcp:smoke:ldjson | tee /tmp/mcp-smoke-ldjson.out
 
-# initialize and tools/list responses should be output as JSON lines
+# initialize と tools/list の応答が JSON 行で出力されること
 grep -c '"jsonrpc":"2.0"' /tmp/mcp-smoke-ldjson.out
 ```
-**Expected**: `initialize` and `tools/list` responses are obtained (no OpenAI API calls made).
+**期待**: `initialize` と `tools/list` の応答が得られる（OpenAI API 呼び出しは行わない）。
 
-### 2-1 Additional: ping verification (no API key required, immediate termination)
+### 2-1 追加: ping の確認（API鍵不要・即終了）
 ```bash
 npm run mcp:smoke:ping | tee /tmp/mcp-smoke-ping.out
 
-# ping result should return empty object
+# ping の result が空オブジェクトで返ること
 grep -c '"result":{}' /tmp/mcp-smoke-ping.out
 ```
 **期待**: `initialize` 応答の後に `{"jsonrpc":"2.0","id":<n>,"result":{}}` が出力される。

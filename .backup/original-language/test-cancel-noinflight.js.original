@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Test purpose: Verify that the server harmlessly ignores notifications/cancelled 
-// for requestId that doesn't exist in inflight, and other requests (ping) respond normally.
-// Success: exit 0 for OK, exit 1 on failure.
+// テスト目的: inflightに存在しない requestId で notifications/cancelled を送っても
+// サーバが無害に無視し、他のリクエスト（ping）が通常応答することを確認する。
+// 成否: OKでexit 0、失敗時はexit 1。
 
 import { spawn } from 'node:child_process';
 

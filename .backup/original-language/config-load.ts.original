@@ -39,7 +39,7 @@ function fromYaml(path?: string): PartialDeep<Config> {
 function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
   const copy = JSON.parse(JSON.stringify(cfg)) as Config;
 
-  // Model (answer) quick override
+  // モデル（answer）クイック上書き
   if (env.MODEL_ANSWER) {
     if (!copy.model_profiles.answer) copy.model_profiles.answer = { model: '', reasoning_effort: 'medium', verbosity: 'medium' } as any;
     copy.model_profiles.answer.model = String(env.MODEL_ANSWER);

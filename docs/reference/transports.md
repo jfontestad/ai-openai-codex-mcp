@@ -1,25 +1,25 @@
 
 # Transports — `docs/reference/transports.md`
-最終更新: 2025-08-15（Asia/Tokyo, AI確認）
+Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
-本ドキュメントは **openai-responses-mcp** が実装するトランスポート仕様を記述します。  
-現行は **stdio** のみ実装。
+This document describes the transport specifications implemented by **openai-responses-mcp**.
+Currently only **stdio** is implemented.
 
 ---
 
-## 1. stdio（実装済み）
+## 1. stdio (Implemented)
 
-### 1.1 物理レイヤ
-- **双方向**：プロセスの `stdin`/`stdout` を使用（バイナリ不可、**UTF-8** テキスト）。
-- **フレーミング（優先）**：`Content-Length: <n>\r\n\r\n<payload>` 固定ヘッダ。複数メッセージを連結可能。
-- **互換モード（フォールバック）**：クライアントが Content-Length を送らない場合、**行区切りJSON（NDJSON風）** も受理。受信で行モードを検出した場合、以後のサーバ応答も **JSON + `\n`** で返す。
-- **ペイロード**：`application/json; charset=utf-8`。改行は任意（`\n` 推奨）。
-- **エンコーディング**：UTF-8。BOM 不可。
+### 1.1 Physical Layer
+- **Bidirectional**: Uses process `stdin`/`stdout` (binary not supported, **UTF-8** text).
+- **Framing (preferred)**: `Content-Length: <n>\r\n\r\n<payload>` fixed header. Multiple messages can be concatenated.
+- **Compatibility mode (fallback)**: If client doesn't send Content-Length, **line-delimited JSON (NDJSON-style)** is also accepted. If line mode is detected on receive, subsequent server responses are also returned as **JSON + `\n`**.
+- **Payload**: `application/json; charset=utf-8`. Newlines are optional (`\n` recommended).
+- **Encoding**: UTF-8. BOM not allowed.
 
-### 1.2 JSON-RPC 互換
-- **バージョン**：`"jsonrpc":"2.0"`（互換）。
-- **メソッド**：`initialize` / `tools/list` / `tools/call` / `ping` を使用（`ping` は任意のヘルスチェック）。
-- **ID**：数値/文字列いずれも可。リクエストとレスポンスで一致させる。
+### 1.2 JSON-RPC Compatibility
+- **Version**: `"jsonrpc":"2.0"` (compatible).
+- **Methods**: Uses `initialize` / `tools/list` / `tools/call` / `ping` (`ping` is optional health check).
+- **ID**: Both numbers and strings are acceptable. Match between request and response.
 
 ### 1.3 初期化
 **受信（例）**

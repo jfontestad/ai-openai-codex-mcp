@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Test purpose: Verify that tools/list contains `answer`/`answer_detailed`/`answer_quick` 3 tools.
-// No OpenAI API calls occur, so API key not required. Exit 0 on success, exit 1 on failure.
+// テスト目的: tools/list に `answer`/`answer_detailed`/`answer_quick` の3ツールが含まれることを検証。
+// OpenAI API 呼び出しは発生しないため API キー不要。成功で exit 0、失敗で exit 1。
 
 import { spawn } from 'node:child_process';
 

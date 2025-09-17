@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Simple clean: Delete build/ (Node implementation for cross-platform compatibility)
+// 簡易クリーン: build/ を削除（クロスプラットフォーム対応のためNodeで実装）
 import { rmSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
