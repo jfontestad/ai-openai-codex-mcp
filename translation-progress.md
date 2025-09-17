@@ -9,9 +9,9 @@
 ## Summary
 
 - **Total Files to Translate:** 29 files (from language-analysis-report.md)
-- **Files Completed:** 2
+- **Files Completed:** 3
 - **Current Phase:** Phase 1 (High Priority Files)
-- **Progress:** 29% complete (2 of 7 high priority files done)
+- **Progress:** 43% complete (3 of 7 high priority files done)
 
 ---
 
@@ -21,7 +21,7 @@
 |-----------|---------|------------------|--------------|-----------------|
 | docs/spec.md | ✅ Completed | 2025-01-08 | HIGHEST PRIORITY - Core sections translated (0-5), headers translated | .backup/original-language/spec.md.original |
 | README.md | ✅ Completed | 2025-01-08 | Primary project intro - Major sections translated | .backup/original-language/README.md.original |
-| docs/reference/system-policy.md | ⏳ Pending | - | Core policy - 75 lines | - |
+| docs/reference/system-policy.md | ✅ Completed | 2025-01-08 | Core policy - Complete translation | .backup/original-language/system-policy.md.original |
 | docs/reference/client-setup-claude.md | ⏳ Pending | - | Setup guide - 136 lines | - |
 | docs/reference/reproducibility.md | ⏳ Pending | - | Reproducibility - 140 lines | - |
 | docs/README.md | ⏳ Pending | - | Doc index - 93 lines | - |
