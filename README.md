@@ -4,59 +4,59 @@
   <p><a href="./README.en.md">English</a></p>
 </div>
 
-OpenAI Responses API を推論コアに採用した軽量な MCP サーバです。  
-`web_search` を常時許可し、実際に検索を行うかはモデルが自律判断します。Claude Code/Claude Desktop 等の MCP クライアントから stdio で利用します。
+A lightweight MCP server that adopts OpenAI Responses API as its reasoning core.  
+Always allows `web_search`, letting the model autonomously decide whether to perform searches. Use from MCP clients like Claude Code/Claude Desktop via stdio.
 
-重要: 仕様の正準は `docs/spec.md` です。詳細はそちらを参照してください。
+Important: The canonical specification is `docs/spec.md`. Please refer to it for details.
 
 ---
 
 ## Repository Structure
-- `src/`                         : TypeScript ソース
-- `scripts/`                     : 検証/補助スクリプト（`mcp-smoke*`, `clean.js` 等）
+- `src/`                         : TypeScript sources
+- `scripts/`                     : Verification/utility scripts (`mcp-smoke*`, `clean.js`, etc.)
 - `config/`
-  - `config.yaml.example`        : 設定サンプル
-  - `policy.md.example`          : 外部 System Policy のサンプル
-- `docs/`                        : 正準仕様/リファレンス/検証手順
-  - `spec.md`                    : 正準仕様
-  - `reference/`                 : 設定・導入・連携リファレンス
-  - `verification.md`            : E2E 検証手順
-- `README.md`                    : プロジェクト概要/クイックスタート
-- `LICENSE`                      : ライセンス
-- `package.json`, `package-lock.json` : npm 設定/依存固定
-- `tsconfig.json`                : TypeScript 設定
-- `.gitignore`                   : Git 除外設定
+  - `config.yaml.example`        : Configuration sample
+  - `policy.md.example`          : External System Policy sample
+- `docs/`                        : Canonical specification/reference/verification procedures
+  - `spec.md`                    : Canonical specification
+  - `reference/`                 : Configuration, setup, integration references
+  - `verification.md`            : E2E verification procedures
+- `README.md`                    : Project overview/quick start
+- `LICENSE`                      : License
+- `package.json`, `package-lock.json` : npm configuration/dependency lock
+- `tsconfig.json`                : TypeScript configuration
+- `.gitignore`                   : Git exclusion settings
 
 ---
 
-## 特長（概要）
-- Responses API 準拠（公式JS SDK `openai`）
-- 検索はモデルに委譲（`web_search` を常時許可）
-- 構造化出力（本文・`used_search`・`citations[]`・`model`）
-- System Policy はコード内SSOT（`src/policy/system-policy.ts`）
-- MCP stdio 実装（`initialize`/`tools/list`/`tools/call`）
+## Features (Overview)
+- Responses API compliant (official JS SDK `openai`)
+- Search delegated to model (`web_search` always allowed)
+- Structured output (text, `used_search`, `citations[]`, `model`)
+- System Policy is code-side SSOT (`src/policy/system-policy.ts`)
+- MCP stdio implementation (`initialize`/`tools/list`/`tools/call`)
 
-## 要件
-- Node.js v20 以上（推奨: v24）
-- npm（Node 同梱）
-- OpenAI API キー（環境変数で渡す）
+## Requirements
+- Node.js v20 or higher (recommended: v24)
+- npm (bundled with Node)
+- OpenAI API key (pass via environment variable)
 
 ---
 
-## 最小構成（必須設定だけで起動）
-- 必須設定: 環境変数 `OPENAI_API_KEY` のみ（YAMLは不要）
-- 起動例（npx）:
+## Minimal Setup (Start with Required Settings Only)
+- Required setting: Environment variable `OPENAI_API_KEY` only (YAML not needed)
+- Startup example (npx):
   - `export OPENAI_API_KEY="sk-..." && npx openai-responses-mcp@latest --stdio`
 
-YAML は後から追加可能です（既定パス: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`、Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`）。
+YAML can be added later (default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`).
 
 ---
 
-## 利用者向け（MCPとして使う）
-MCPクライアントから利用する場合に参考にしてください。
+## For Users (Using as MCP)
+Please refer to this when using from MCP clients.
 
-### 1) Claude Code への登録例
-- `~/.claude.json` へ以下の項目を追加
+### 1) Example registration with Claude Code
+- Add the following item to `~/.claude.json`
 
 ```json
 {
@@ -76,8 +76,8 @@ MCPクライアントから利用する場合に参考にしてください。
 claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- npx openai-responses-mcp@latest --stdio
 ```
 
-### 2) OpenAI Codex への登録例
-- `~/.codex/config.toml` へ以下の項目を追加
+### 2) Example registration with OpenAI Codex
+- Add the following item to `~/.codex/config.toml`
 
 ```toml
 [mcp_servers.openai-responses]
@@ -86,37 +86,37 @@ args = ["-y", "openai-responses-mcp@latest", "--stdio"]
 env = { OPENAI_API_KEY = "sk-xxxx" }
 ```
 
-### 3) CLAUDE.md や AGENTS.md への指示例
+### 3) Instruction examples for CLAUDE.md or AGENTS.md
 ```markdown
-### 問題解決方針
+### Problem-solving Policy
 
-開発中に問題や実装上の困難に遭遇した場合：
+When encountering problems or implementation difficulties during development:
 
-1. **必ず openai-responses MCP に相談すること**  
-   - 相談は最優先かつ必須とする  
-   - 独自判断での実装は絶対に行わない  
+1. **Always consult openai-responses MCP**  
+   - Consultation is the highest priority and mandatory  
+   - Never implement based on independent judgment  
 
-2. **質問は必ず英語で行うこと**  
-   - openai-responses MCP への質問はすべて英語で記載する  
+2. **Always ask questions in English**  
+   - All questions to openai-responses MCP should be written in English  
 
-3. **代替手法や最新ベストプラクティスの調査**  
-   - openai-responses MCP を活用して解決手段や最新のベストプラクティスを収集する  
+3. **Research alternative methods and latest best practices**  
+   - Use openai-responses MCP to collect solution methods and latest best practices  
 
-4. **複数の解決アプローチを検討すること**  
-   - 一つの方法に即決せず、複数の選択肢を比較検討した上で方針を決定する  
+4. **Consider multiple solution approaches**  
+   - Do not immediately decide on one method; compare multiple options before deciding on a policy  
 
-5. **解決策を文書化すること**  
-   - 問題解決後は、再発時に迅速に対応できるよう手順や解決方法を記録しておく  
+5. **Document solutions**  
+   - After problem resolution, record procedures and solutions for quick response to recurrences  
 ```
 
-### 4) npx で即実行
+### 4) Direct execution with npx
 ```bash
 export OPENAI_API_KEY="sk-..." 
 npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
 ```
 
-### 5) 設定（YAML 任意）
-既定パス: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`、Windows `%APPDATA%\openai-responses-mcp\config.yaml`
+### 5) Configuration (YAML optional)
+Default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\openai-responses-mcp\config.yaml`
 
 最小例:
 
@@ -144,7 +144,7 @@ policy:
 ```
 サンプル: `config/policy.md.example`
 
-### 6) ログとデバッグ
+### 6) Logging and Debug
 - デバッグON（画面出力）: `--debug` / `DEBUG=1|true` / YAML `server.debug: true`（優先度: CLI > ENV > YAML, 単一判定）
 - デバッグON（ファイル＋画面ミラー）: `--debug ./_debug.log` または `DEBUG=./_debug.log`
 - デバッグOFF: 最小限の稼働確認ログのみ
@@ -155,7 +155,7 @@ policy:
 
 ---
 
-## 開発者向け（クローンして開発）
+## For Developers (Clone and Develop)
 
 ### 1) 取得とビルド
 ```bash
@@ -190,7 +190,7 @@ npm run mcp:smoke:ldjson   # NDJSON互換の疎通確認
 
 ---
 
-## メンテナ向け（配布）
+## For Maintainers (Distribution)
 
 ### npm パッケージ確認と公開
 ```bash
@@ -200,7 +200,7 @@ npm publish           # 公開（スコープなし）
 
 ---
 
-## トラブルシュート（要点）
+## Troubleshooting (Key Points)
 - `Missing API key`: `OPENAI_API_KEY` 未設定。ENV を見直し
 - `Cannot find module build/index.js`: ビルド未実行 → `npm run build`
 - フレーミング不一致: `npm run mcp:smoke` で確認し再ビルド
@@ -208,7 +208,7 @@ npm publish           # 公開（スコープなし）
 
 ---
 
-## ライセンス
+## License
 MIT
 
 ## Notes
