@@ -239,14 +239,14 @@ Invalid values may not necessarily cause errors and may be applied as-is. We rec
 ---
 
 ## 10. セキュリティ注意
-- **API キーは YAML に書かない**。常に ENV（`openai.api_key_env` が指す変数）から取得。
+- **API keys are not written to YAML**. Always obtained from ENV (variable pointed to by `openai.api_key_env`).
 - `base_url` を私設プロキシに向ける場合は、組織のセキュリティ方針に従ってください。
 
 ---
 
-<!-- 追加パラメータの検討（未定事項）は docs/_drafts/config-additional-params.md へ退避 -->
+<!-- Additional parameter considerations (undecided items) are moved to docs/_drafts/config-additional-params.md -->
 
 ## 12. よくある質問（抜粋）
-- **Q: YAML が無くても動く？** → はい。TS defaults と ENV/CLI だけでも動作します。  
-- **Q: `domains` を複数入れたら？** → ヒントとして渡され、モデルの検索判断に影響します（強制フィルタではありません）。  
-- **Q: `web_search` を常時許可するのはなぜ？** → 「必要と判断したら実行」をモデルに委ね、**時事性**の取りこぼしを防ぐためです。
+- **Q: Works without YAML?** → Yes. Works with just TS defaults and ENV/CLI.
+- **Q: Multiple domains?** → Passed as hints, influences model's search decisions (not forced filtering).
+- **Q: Why always allow web_search?** → Let model decide "execute when needed" to prevent missing **current events**.

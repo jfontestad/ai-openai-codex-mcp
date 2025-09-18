@@ -88,40 +88,40 @@ YAML
 
 node build/index.js --show-config --config /tmp/mcp-config.yaml 2> effective.json; cat effective.json | jq '.sources, .effective.model_profiles.answer.model'
 ```
-**期待**: `.sources.yaml` が `/tmp/mcp-config.yaml` を指し、`"gpt-5-mini"`。
+**Expected**: `.sources.yaml` points to `/tmp/mcp-config.yaml` and shows `"gpt-5-mini"`.
 
 ---
 
-## 5. タイムアウト/リトライ観察（任意, 要 OPENAI_API_KEY）
-API 側の都合により再現しづらい場合がありますが、`OPENAI_API_TIMEOUT` を小さくして Abort → リトライを観察できます。
+## 5. Timeout/Retry Observation (Optional, requires OPENAI_API_KEY)
+Due to API-side circumstances, reproduction may be difficult, but you can observe Abort → retry by reducing `OPENAI_API_TIMEOUT`.
 ```bash
 export OPENAI_API_KEY="sk-..."
 OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
 ```
-（ログにリトライ回数が出る構成にしている場合は、その値を確認してください）
+(If your configuration logs retry counts, verify that value)
 
 ---
 
 ## 6. 失敗時の切り分け
 - `Missing API key: set OPENAI_API_KEY` → 環境変数未設定
-- `ECONNRESET` / `AbortError` → ネットワーク/タイムアウト
+- `ECONNRESET` / `AbortError` → Network/timeout
 - `Unknown tool` → `tools/call` の name ミス（`answer` のみ対応）
 
 ---
 
 ## 7. 成功判定（DoD 準拠）
-- 1・2・4 の各検証が**期待どおり**になれば要件を満たしています。
+- If verifications 1, 2, and 4 show **expected results**, requirements are met.
 
 ---
 
 ## 8. キャンセル（notifications/cancelled）の自動テスト
 
-### 8-1 inflightなしのキャンセル（API鍵不要・常時実行）
+### 8-1 Cancellation without inflight (No API key required, always run)
 ```bash
 npm run build
 node scripts/test-cancel-noinflight.js
 ```
-**期待**: `initialize` と `ping` の応答が成功し、テストは exit 0。
+**Expected**: `initialize` and `ping` responses succeed, test exits 0.
 
 ### 8-2 実行中キャンセルの抑止（要 OPENAI_API_KEY・任意）
 ```bash
@@ -140,4 +140,4 @@ node scripts/test-cancel-during-call.js
 npm run build
 node scripts/test-tools-list.js
 ```
-**期待**: `answer` / `answer_detailed` / `answer_quick` の3ツールが含まれる。テストは exit 0。
+**Expected**: Contains 3 tools: `answer` / `answer_detailed` / `answer_quick`. Test exits 0.

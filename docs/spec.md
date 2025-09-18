@@ -381,48 +381,48 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ## 8. Security / Logging
 - API keys are read **from ENV only**, not written to YAML/JSON.
-- ログに**回答本文やキーをフルで残さない**。必要最小のメタ情報（モデル名/レイテンシ/再試行回数）に限定。
+- **Don't leave full response content or keys in logs**. Limit to minimal metadata (model name/latency/retry count).
 - プロキシ・私設ゲートウェイ利用は組織方針に従う。
 
 ### 8.1 デバッグログ（有効条件と単一判定）
-- 目的：障害時の切り分け（モデル非対応・タイムアウト・429/5xx・不正引数）を、本文や秘匿情報を出さずに特定する。
+- Purpose: Identify failure causes (model incompatibility, timeout, 429/5xx, invalid arguments) without exposing content or confidential information.
 - 有効化の入力源（同義、優先度：CLI > ENV > YAML）
   - CLI: `--debug` または `--debug <path>`
   - ENV: `DEBUG=1|true|<path>`
   - YAML: `server.debug: true`（任意で `server.debug_file: <path>`）
-- 単一判定：アプリ起動時に最終状態（enabled/file）を一度だけ確定し、以降は共通関数で判定する（`isDebug()`）。モジュール個別に `process.env` を参照しない。
-- 出力方針：stderr へ出力（必要に応じて `<path>` にTEEミラー）。API キーや本文、instructions は出力しない。
+- Single determination: Determine final state (enabled/file) once at app startup, then use common function for subsequent checks (`isDebug()`). Modules don't reference `process.env` individually.
+- Output policy: Output to stderr (with TEE mirror to `<path>` as needed). Don't output API keys, content, or instructions.
 - 出力内容（例）：
   - server: `tools/call name=<tool> argsKeys=[...] queryLen=<n>`
   - answer: `profile=<name> model=<id> supports={verbosity:<bool>, reasoning:<bool>}`
   - answer: `request summary tools=web_search(<on/off>) reasoning=<on/off> text.verbosity=<on/off>`
   - openai(client): `error attempt=<n> status=<code> name=<err.name> code=<err.code> msg="..." body="<先頭抜粋>"`
 - 機密対策：
-  - 本文は長さのみ（`queryLen`）を記録。`instructions` は出力しない。
-  - レスポンスボディは先頭数百文字に丸め、URL/鍵等が含まれないことを前提に表示。疑義がある場合は出力を抑止。
+  - Record only content length (`queryLen`). Don't output `instructions`.
+  - Round response body to first few hundred characters, assuming no URLs/keys included. Suppress output if questionable.
 
 ### 8.2 エラー詳細の JSON-RPC 返却（DEBUG=1 または `--debug` 時のみ）
-- 目的：クライアント UI でサーバ stderr を拾えない場合でも、最小限の切り分け情報を可視化する。
-- `tools/call` が失敗した場合、`error` の `data` に以下を含める：
-  - `message`（先頭 400 文字程度に丸め）
-  - `status`（HTTP ステータスや SDK の `code`）
-  - `type`（API エラー種別が得られる場合）
+- Purpose: Visualize minimal diagnostic information when client UI can't capture server stderr.
+- When `tools/call` fails, include the following in `error` `data`:
+  - `message` (rounded to ~400 characters)
+  - `status` (HTTP status or SDK `code`)
+  - `type` (API error type when available)
   - `name`（例外名）
-- 機密対策：本文・instructions・API キーは含めない。必要最小限のメタ情報のみ。
+- Confidentiality measure: Don't include content, instructions, or API keys. Only minimal metadata.
 
 ---
 
 ## 9. Multilingual & Date Rules
 - 日本語入力→日本語応答。英語入力→英語応答。
 - 相対日付（今日/昨日/明日）は **Asia/Tokyo** で**絶対日付**化（`YYYY-MM-DD`）。
-- 出典には可能な限り ISO 日付を併記（公開日が無い場合は **アクセス日**）。
+- Sources should include ISO dates whenever possible (use **access date** when publication date unavailable).
 
 ---
 
 ## 10. Definition of Done (DoD)
 - 「HTTP 404 の意味」は `used_search=false`、`citations=[]` で返る。
 - 「本日 YYYY-MM-DD の東京の天気」は `used_search=true`、`citations.length>=1`、本文に URL + ISO 日付併記。
-- `npm run mcp:smoke` が `initialize → tools/list → tools/call(answer)` の 3 応答を返す。
+- `npm run mcp:smoke` returns 3 responses: `initialize → tools/list → tools/call(answer)`.
 
 ---
 
@@ -443,21 +443,21 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ---
 
 ## 13. Non-functional Requirements (Excerpt)
-- **安定運用**：beta/alpha を避け、**正式リリース**された SDK/ランタイムのみ使用（npm/Node）。
+- **Stable operation**: Avoid beta/alpha, use only **official releases** of SDK/runtime (npm/Node).
 - **再現性**：`--show-config` による実効設定の保存を推奨（`docs/reference/reproducibility.md`）。
 - **セキュリティ**：秘密は ENV のみ、ログ最小化。
 
 ---
 
-<!-- 将来拡張（設計のみ）: 未定事項のため公開版から削除 -->
+<!-- Future extensions (design only): Removed from public version due to undecided items -->
 
-## 15. npm 配布メタデータ（package.json 公開仕様）
+## 15. npm Distribution Metadata (package.json Publication Spec)
 本セクションは npm 公開時の `package.json` の必須/推奨項目を定義する。公開前には本仕様と一致していることを確認すること。
 
 ### 15.1 必須項目
 - name: `openai-responses-mcp`
 - version: セマンティックバージョニング（現行 `0.4.x`）
-- description: 以下の文言を使用（段階表現「Step N:」は含めない）
+- description: Use the following text (don't include stage expressions like "Step N:")
   - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
 - type: `module`
 - bin: `{ "openai-responses-mcp": "build/index.js" }`
@@ -466,7 +466,7 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 - engines.node: `>=20`
 - license: `MIT`
 
-### 15.2 推奨メタ（npm ページの利便性向上）
+### 15.2 Recommended Metadata (npm Page Usability Enhancement)
 - repository: `{ "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" }`
 - homepage: `https://github.com/uchimanajet7/openai-responses-mcp#readme`
 - bugs: `{ "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }`
@@ -498,12 +498,12 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ```
 
 ### 15.4 適用・検証フロー
-1) 仕様との差分を洗い出す（`description` に「Step N:」が残っていないか確認）。
+1) Identify differences from spec (confirm no "Step N:" remains in `description`).
 2) `repository/homepage/bugs` を本仕様のURLで追加。
-3) `npm run build:clean && npm pack --dry-run` で同梱物とメタを確認。
+3) Verify included items and metadata with `npm run build:clean && npm pack --dry-run`.
 4) 変更理由と影響範囲を `docs/changelog.md` に追記（ユーザー可視）。
 
-注記：本仕様は公開メタデータの最低限を定めるものであり、依存やスクリプトの詳細は上位セクション（機能仕様）に従う。
+Note: This spec defines minimum requirements for public metadata; dependency and script details follow higher sections (functional spec).
 
 ---
 
@@ -552,21 +552,21 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ### 16.1 バージョニング（SemVer / SSOT）
 - バージョンの**唯一の出所（SSOT）**は `package.json` の `version`。
 - 破壊的変更=MAJOR、後方互換の機能追加=MINOR、修正=PATCH。
-- `package-lock.json` の `version` を**手動で書き換えない**（`npm install` が自動整合）。
+- **Don't manually rewrite** `version` in `package-lock.json` (`npm install` auto-reconciles).
 - Node は `engines.node: ">=20"` を満たすこと。
 
 ### 16.2 Changelog（Keep a Changelog 準拠）
 - 位置: `docs/changelog.md`。
 - 形式: Keep a Changelog 準拠。セクション順は `Unreleased` → 過去リリース（新しい順）。
-- タイムゾーン: 日付は Asia/Tokyo。
+- Timezone: Dates are Asia/Tokyo.
 - 区分例: Added / Changed / Fixed / Removed / Deprecated / Security。
 - プレリリース期間（〜v1.0.0）: `Unreleased` に集約し、必要時に `vx.y.z — YYYY-MM-DD` として確定。
-- リリース確定時: `Unreleased` から該当差分を抜き出し、日付入りで新セクションを作成。
+- When release confirmed: Extract relevant diff from `Unreleased` and create new section with date.
 
 ### 16.3 Lockfile 運用（npm lockfile v3）
 - `package-lock.json` は**VCS にコミット**する（再現性のため）。
-- 再生成は **`package.json` 側がソース**。ロックは手動編集禁止。
-- 生成/再生成の手順（再現性の優先度が高い順）:
+- Regeneration uses **`package.json` as source**. Manual lock editing prohibited.
+- Generation/regeneration procedures (ordered by reproducibility priority):
 
   1) クリーン再解決（推奨）
   ```bash
@@ -574,13 +574,13 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
   npm install
   ```
 
-  2) 迅速な再解決（最小作業）
+  2) Quick re-resolution (minimal work)
   ```bash
   rm -f package-lock.json
   npm install
   ```
 
-  3) 既存 lock からの再現インストール（再生成はしない）
+  3) Reproduce install from existing lock (no regeneration)
   ```bash
   npm ci
   ```
@@ -594,10 +594,10 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ## 11. CI/CD 仕様（GitHub Actions）
 本節は docs/release.md（フェーズB/C）の運用方針を正準仕様としてまとめたもの。実装時は本仕様に完全準拠する。
 
-### 11.1 ブランチ/タグ運用
+### 11.1 Branch/Tag Operations
 - `main`: リリース対象ブランチ。
 - `feature/*`: 機能開発ブランチ（PR前提）。
-- タグ: `vX.Y.Z` 形式のみをリリーストリガに使用（SemVer）。
+- Tags: Use only `vX.Y.Z` format as release trigger (SemVer).
   - バージョンの決定は手動で `package.json` を bump → `git tag vX.Y.Z` → `git push --tags`。
 
 ### 11.2 ワークフロー構成
@@ -614,7 +614,7 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
        - 既定: `npm run mcp:smoke:ldjson`（OpenAI鍵不要）
        - 任意: `npm run mcp:smoke`（`OPENAI_API_KEY` を設定した場合のみ実行）
 
-- `release.yml`（タグ push: 自動リリース — Trusted Publishing を採用）
+- `release.yml` (tag push: auto-release — adopts Trusted Publishing)
   - トリガ: `push` with `tags: ["v*"]`
   - 権限: `permissions: { contents: write, id-token: write }`
   - Node: `20.x`
@@ -628,7 +628,7 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 - Trusted Publishing では `NPM_TOKEN` は不要。npmjs 側で Trusted Publishers を設定する。
 
 ### 11.4 参考 YAML（概要）
-以下は実装の骨子（実装時はこの仕様を忠実に反映し、重複や余分な手順は追加しない）。
+The following is the implementation framework (during implementation, faithfully reflect this specification without adding duplicates or extra steps).
 
 ci.yml（概要）:
 ```yaml
@@ -641,7 +641,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # 鍵がある場合のみ鍵依存テストを実行するため、ジョブenvにバインド。
+      # Run key-dependent tests only when key is available, so bind to job env.
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -682,7 +682,7 @@ jobs:
 
 ### 11.5 成果物と公開ポリシー
 - `package.json.files` に指定された最小セットのみを公開（`build/`, `config/*.example`, `README.md`, `LICENSE`, `package.json`）。
-- `prepublishOnly`: `npm run build` を保持（ローカル publish も同一挙動）。
+- `prepublishOnly`: Retain `npm run build` (local publish has same behavior).
 - 公開後の検証: `npx openai-responses-mcp@latest --stdio` で起動確認。
 
 ### 11.6 運用フロー（再掲・確定）
@@ -691,4 +691,4 @@ jobs:
 3) `git tag vX.Y.Z && git push --tags`（`release.yml` 実行 → npm publish（Trusted Publishing））
 4) Actions の成功確認 → README の npx 例で動作確認
 
-注: `repository`/`homepage`/`bugs` の `package.json` 追記は npm ページ表示改善のため推奨だが、実装は別途合意の上で行う。
+Note: Adding `repository`/`homepage`/`bugs` to `package.json` is recommended for npm page display improvement, but implementation should be done separately with agreement.

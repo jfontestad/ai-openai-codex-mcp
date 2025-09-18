@@ -130,7 +130,7 @@ MODEL_ANSWER=gpt-5 npx openai-responses-mcp --show-config 2> effective.json
 ## 7. Verify Installation Location (Local/Global/npx)
 
 ### 7.1 Local (Under project or tgz pseudo-installation)
-`npm i` や `npm i <tgz>` を実行した直後であれば、カレントの `node_modules` に配置されます。
+If you run `npm i` or `npm i <tgz>` immediately, it will be placed in the current `node_modules`.
 
 例（tgz 擬似インストール手順の続き）:
 ```
@@ -157,7 +157,7 @@ npx -y openai-responses-mcp@latest --version --loglevel=verbose
 npm config get cache   # キャッシュディレクトリの場所
 ```
 
-> 注意: `npx` のキャッシュ場所は環境や npm のバージョンにより異なります。恒久的に場所を固定したい場合は、ローカル（プロジェクト）またはグローバルに通常インストールしてください。
+> Note: `npx` cache location varies by environment and npm version. For permanent location fixing, install locally (project) or globally.
 
 ---
 
@@ -180,7 +180,7 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 以上
 ```
-`initialize → tools/list → tools/call(answer)` の 3 応答が確認できれば、stdio レイヤは健全です。
+If you can confirm 3 responses of `initialize → tools/list → tools/call(answer)`, the stdio layer is healthy.
 
 ---
 
@@ -201,8 +201,8 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 以上
 
 ---
 
-## 10. npm パッケージとしての導入（ローカル検証）
-リポジトリ直下でパッケージを生成し、**別ディレクトリ**からインストールして `npx` 実行を検証できます。
+## 10. Introduction as npm Package (Local Verification)
+Generate package in repository root and verify `npx` execution by installing from **separate directory**.
 
 ```bash
 # パッケージ生成
@@ -217,12 +217,12 @@ npx openai-responses-mcp --version
 popd >/dev/null
 ```
 
-> 公開前のローカル検証に有効です。正式公開時は `npm publish` を使用。
+> Effective for pre-publication local verification. Use `npm publish` for official publication.
 
 ---
 
 ## 11. アンインストール / クリーンアップ
-- ローカル依存の削除: `rm -rf node_modules/`（Windows: `rd /s /q node_modules`）
+- Remove local dependencies: `rm -rf node_modules/` (Windows: `rd /s /q node_modules`)
 - ビルド生成物の削除: `rm -rf build/`
 - npm グローバル導入の削除（任意）: `npm uninstall -g openai-responses-mcp`
 
@@ -231,13 +231,13 @@ popd >/dev/null
 ## 12. トラブルシュート
 - **Missing API key**: `OPENAI_API_KEY` 未設定。ENV を見直す。
 - **Cannot find module build/index.js**: `npm run build` 未実行または失敗。
-- **Content-Length エラー**: バイナリ/改行混入など。再ビルドと `npm run mcp:smoke` を実行。
-- **429/5xx が多発**: リトライ上限を上げる（`RETRIES`）。`TIMEOUT` を調整。
+- **Content-Length error**: Binary/line break contamination. Rebuild and run `npm run mcp:smoke`.
+- **429/5xx frequent**: Increase retry limit (`RETRIES`). Adjust `TIMEOUT`.
 - **モデル未対応**: `MODEL_ANSWER` を安定版へ戻す。
 
 ---
 
 ## 13. セキュリティ注意
 - API キーは **ENV でのみ**渡す。YAML/JSON の平文保存は禁止。
-- ログに機密を残さない。必要最小のメタ（モデル名・再試行回数・レイテンシ）に留める。
+- Don't leave secrets in logs. Limit to minimal metadata (model name, retry count, latency).
 - 共有端末では、作業後に `unset OPENAI_API_KEY`（PowerShell は `$env:OPENAI_API_KEY=$null`）。
