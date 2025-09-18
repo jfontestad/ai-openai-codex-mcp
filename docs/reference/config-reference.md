@@ -1,5 +1,5 @@
 
-# Configuration Reference — `docs/reference/config-reference.md`
+# Configuration Reference - `docs/reference/config-reference.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
 This document provides a complete specification for **openai-responses-mcp** configuration.
@@ -227,11 +227,11 @@ node build/index.js --show-config 2> effective-config.json
 
 ## 9. Constraints (Validation Guidelines)
 - `request.timeout_ms` > 0  
-- `request.max_retries` ∈ [0,10]  
-- `policy.max_citations` ∈ [1,10]  
-- `policy.requery_attempts` ∈ [0,3]  
-- `search.defaults.max_results` ∈ [1,10]  
-- `search.defaults.recency_days` ≥ 0  
+- `request.max_retries` in [0,10]  
+- `policy.max_citations` in [1,10]  
+- `policy.requery_attempts` in [0,3]  
+- `search.defaults.max_results` in [1,10]  
+- `search.defaults.recency_days` >= 0  
   
 
 Invalid values may not necessarily cause errors and may be applied as-is. We recommend inspecting the JSON (stderr) from `--show-config` in CI.
@@ -247,6 +247,6 @@ Invalid values may not necessarily cause errors and may be applied as-is. We rec
 <!-- Additional parameter considerations (undecided items) are moved to docs/_drafts/config-additional-params.md -->
 
 ## 12. Frequently Asked Questions (Excerpts)
-- **Q: Works without YAML?** → Yes. Works with just TS defaults and ENV/CLI.
-- **Q: Multiple domains?** → Passed as hints, influences model's search decisions (not forced filtering).
-- **Q: Why always allow web_search?** → Let model decide "execute when needed" to prevent missing **current events**.
+- **Q: Works without YAML?** -> Yes. Works with just TS defaults and ENV/CLI.
+- **Q: Multiple domains?** -> Passed as hints, influences model's search decisions (not forced filtering).
+- **Q: Why always allow web_search?** -> Let model decide "execute when needed" to prevent missing **current events**.

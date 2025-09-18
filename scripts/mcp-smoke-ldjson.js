@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Line-delimited JSON (no Content-Length) minimal connectivity smoke test
-// Send initialize → tools/list and stream server responses directly to stdout
+// Send initialize -> tools/list and stream server responses directly to stdout
 import { spawn } from "node:child_process";
 
 const child = spawn("node", ["build/index.js", "--stdio"], { stdio: "pipe" });
@@ -28,4 +28,3 @@ setTimeout(() => child.stdin.write(j(list) + "\n", "utf8"), 100);
 
 // Terminate (kill after short time)
 setTimeout(() => { try { child.kill(); } catch {} }, 1500);
-

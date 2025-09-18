@@ -1,5 +1,5 @@
 
-# Canonical Specification — `docs/spec.md`
+# Canonical Specification - `docs/spec.md`
 Last Updated: 2025-08-24 (Asia/Tokyo, AI confirmed)  
 Version: **v0.5.x**
 
@@ -137,7 +137,7 @@ model_profiles:
     model: gpt-5
     reasoning_effort: high
     verbosity: high
-  # answer_quick is omitted → operates with answer configuration
+  # answer_quick is omitted -> operates with answer configuration
 ```
 
 **Minimal Configuration**:
@@ -151,7 +151,7 @@ model_profiles:
 ```
 ### 3.1 Individual Tool Specifications
 
-#### 3.1.1 `answer` - Standard Response Tool (Baseline・Required)
+#### 3.1.1 `answer` - Standard Response Tool (Baseline/Required)
 ```json
 {
   "name": "answer",
@@ -226,7 +226,7 @@ model_profiles:
   "model": "used model id (e.g., gpt-5)"
 }
 ```
-- **Order convention (response body side)**: Main text → (if needed) bullet points → (only when web_search is used) `Sources:` with URLs + ISO dates.
+- **Order convention (response body side)**: Main text -> (if needed) bullet points -> (only when web_search is used) `Sources:` with URLs + ISO dates.
 
 ### 3.3 Search Determination
 - Conditions for `used_search = true`:
@@ -326,137 +326,137 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ---
 
 ## 6. Execution Flow (Multi-profile Support)
-1. **Tool determination**: MCP client selects from `answer`/`answer_detailed`/`answer_quick`.
-2. **プロファイル決定**：選択されたツール名に対応する`model_profiles`設定を取得。未設定の場合はエラー。
-3. **入力検証**: 各ツールのinputSchemaに従って検証。
-4. **Responses 呼び出し（試行）**：
-   - `model`: プロファイルの`model`値（例: `o3`, `gpt-4.1-mini`）
-   - `instructions`: System Policy（前述）
-   - `input`: User `query` (with additional hints for recency/domains if needed)
-   - `tools`: `[{"type":"web_search"}]`（常時許可）
-   - `text`: `{"verbosity": <profile.verbosity>}`（モデル対応時のみ）
-   - `reasoning`: `{"effort": <profile.reasoning_effort>}`（モデル対応時のみ）
-   - `timeout_ms`: 設定値
-5. **Annotation analysis**: Extract **URL / title / published_at** from `url_citation` etc.
-6. **`used_search` 判定** と **`citations` 整形**（最大件数適用）。
-7. **応答 JSON 構築**（本文・`used_search`・`citations[]`・`model`）。
-8. **Return**: Store as **JSON string** in MCP response `content[0].text`.
+1. **Tool determination**: MCP client selects from `answer` / `answer_detailed` / `answer_quick`.
+2. **Profile resolution**: Retrieve the matching `model_profiles` entry for the selected tool. Raise an error if it is missing.
+3. **Input validation**: Validate against each tool's `inputSchema`.
+4. **Responses invocation (attempt)**:
+   - `model`: The profile's `model` value (for example `o3`, `gpt-4.1-mini`).
+   - `instructions`: System Policy (described earlier).
+   - `input`: User `query` plus optional hints such as recency/domains when needed.
+   - `tools`: Always `[{"type":"web_search"}]` so web search remains available.
+   - `text`: `{ "verbosity": <profile.verbosity> }` when supported by the model.
+   - `reasoning`: `{ "effort": <profile.reasoning_effort> }` when supported by the model.
+   - `timeout_ms`: Value from configuration.
+5. **Annotation analysis**: Extract **URL / title / published_at** from `url_citation` annotations.
+6. **Determine `used_search`** and **shape `citations`** (apply the configured maximum count).
+7. **Construct response JSON** containing body, `used_search`, `citations[]`, and `model`.
+8. **Return**: Store the JSON string in MCP response `content[0].text`.
 
 ---
 
-### 6.1 キャンセル（MCP notifications/cancelled）
+### 6.1 Cancellation (MCP `notifications/cancelled`)
 
-本サーバーは MCP のキャンセル通知に対応する。
+This server honors MCP cancellation notifications.
 
-- クライアント通知（片方向）
+- Client notification (one-way)
   - `method`: `notifications/cancelled`
   - `params`: `{ requestId: string | number, reason?: string }`
-  - 応答は不要（通知のため）。
+  - No response body is needed because it is a notification.
 
-- サーバー側の動作
-  - `tools/call` 開始時に、該当 `id` に対する `AbortController` を作成して登録（`id → controller`）。
-  - When cancellation notification (`requestId` matches) is received, call registered `AbortController.abort()` and set interruption flag.
-  - 中断済みの要求については、以後その `id` に対する `result`/`error` の送信を抑止する（遅延完了は破棄）。
-  - 既に完了・未登録の `requestId` に対する通知は無視する（正常）。
-  - `initialize` はキャンセル不可。
+- Server behavior
+  - When `tools/call` starts, create and register an `AbortController` for the request `id` (`id -> controller`).
+  - When a cancellation notification with a matching `requestId` arrives, call the registered `AbortController.abort()` and mark the request as interrupted.
+  - For cancelled requests, stop sending subsequent `result`/`error` responses (discard late completions).
+  - Ignore notifications for `requestId` values that are already finished or were never registered (this is normal).
+  - `initialize` requests cannot be cancelled.
 
-- OpenAI 呼び出しとの連携
-  - `AbortSignal` を OpenAI SDK（Responses API）呼び出しに伝搬する。
-  - Check `signal.aborted` before retry, and immediately interrupt on cancellation (no retries).
+- OpenAI call linkage
+  - Pass the `AbortSignal` to the OpenAI SDK (Responses API) call.
+  - Before retrying, check `signal.aborted` and abort immediately if cancellation was requested (no further retries).
 
-- トランスポート注意
-  - Physical disconnection does not imply cancellation. When cancellation is intended, client must always send `notifications/cancelled`.
+- Transport notes
+  - Physical disconnections do not count as cancellation. Clients must explicitly send `notifications/cancelled` when they intend to cancel.
 
-- ログ（DEBUG 時）
-  - Record `cancelled requestId=<id> reason=<...>` minimally (no main content or secret information).
+- Logging (DEBUG mode)
+  - Emit minimal entries such as `cancelled requestId=<id> reason=<...>` without leaking content or secrets.
 
 ---
 
 ## 7. Retry Strategy
 - Retry targets: HTTP 429 / 5xx / Abort (timeout)
-- 戦略：指数バックオフ（実装裁量、合計 `request.max_retries` 回まで）
-- Failure handling: Return as error to `tools/call` (`code:-32050` etc., implementation-defined).
+- Strategy: Exponential backoff (timing at implementer's discretion, capped at `request.max_retries` attempts).
+- Failure handling: Return as an error to `tools/call` (`code:-32050` etc., implementation-defined).
 
 ---
 
 ## 8. Security / Logging
 - API keys are read **from ENV only**, not written to YAML/JSON.
 - **Don't leave full response content or keys in logs**. Limit to minimal metadata (model name/latency/retry count).
-- プロキシ・私設ゲートウェイ利用は組織方針に従う。
+- Follow your organization's security policies when using proxies or private gateways.
 
-### 8.1 デバッグログ（有効条件と単一判定）
-- Purpose: Identify failure causes (model incompatibility, timeout, 429/5xx, invalid arguments) without exposing content or confidential information.
-- 有効化の入力源（同義、優先度：CLI > ENV > YAML）
-  - CLI: `--debug` または `--debug <path>`
+### 8.1 Debug Logging (Enablement and Single Determination)
+- Purpose: Diagnose failures (model incompatibility, timeouts, 429/5xx, invalid arguments) without leaking content or sensitive data.
+- Enablement sources (equivalent precedence: CLI > ENV > YAML)
+  - CLI: `--debug` or `--debug <path>`
   - ENV: `DEBUG=1|true|<path>`
-  - YAML: `server.debug: true`（任意で `server.debug_file: <path>`）
-- Single determination: Determine final state (enabled/file) once at app startup, then use common function for subsequent checks (`isDebug()`). Modules don't reference `process.env` individually.
-- Output policy: Output to stderr (with TEE mirror to `<path>` as needed). Don't output API keys, content, or instructions.
-- 出力内容（例）：
+  - YAML: `server.debug: true` (optionally `server.debug_file: <path>`)
+- Single determination: Resolve the final debug state (enabled/file location) once at startup, then rely on a shared helper (`isDebug()`). Individual modules must not consult `process.env` directly.
+- Output policy: Write to stderr (TEE mirror to `<path>` when configured). Do not emit API keys, full response bodies, or instructions.
+- Sample log lines:
   - server: `tools/call name=<tool> argsKeys=[...] queryLen=<n>`
   - answer: `profile=<name> model=<id> supports={verbosity:<bool>, reasoning:<bool>}`
   - answer: `request summary tools=web_search(<on/off>) reasoning=<on/off> text.verbosity=<on/off>`
-  - openai(client): `error attempt=<n> status=<code> name=<err.name> code=<err.code> msg="..." body="<先頭抜粋>"`
-- 機密対策：
-  - Record only content length (`queryLen`). Don't output `instructions`.
-  - Round response body to first few hundred characters, assuming no URLs/keys included. Suppress output if questionable.
+  - openai(client): `error attempt=<n> status=<code> name=<err.name> code=<err.code> msg="..." body="<excerpt>"`
+- Confidentiality guardrails:
+  - Record only input length metadata such as `queryLen`; never log the actual `instructions` text.
+  - Truncate response bodies to a few hundred characters and omit them entirely if sensitive content is suspected.
 
-### 8.2 エラー詳細の JSON-RPC 返却（DEBUG=1 または `--debug` 時のみ）
-- Purpose: Visualize minimal diagnostic information when client UI can't capture server stderr.
-- When `tools/call` fails, include the following in `error` `data`:
-  - `message` (rounded to ~400 characters)
+### 8.2 JSON-RPC Error Details (Debug Mode Only)
+- Purpose: Provide minimal diagnostics when the client UI cannot display server stderr.
+- When `tools/call` fails, include these fields inside `error.data`:
+  - `message` (trimmed to about 400 characters)
   - `status` (HTTP status or SDK `code`)
   - `type` (API error type when available)
-  - `name`（例外名）
-- Confidentiality measure: Don't include content, instructions, or API keys. Only minimal metadata.
+  - `name` (exception class)
+- Confidentiality: Exclude any response content, instructions, or API keys; only metadata is permitted.
 
 ---
 
-## 9. Multilingual & Date Rules
-- 日本語入力→日本語応答。英語入力→英語応答。
-- 相対日付（今日/昨日/明日）は **Asia/Tokyo** で**絶対日付**化（`YYYY-MM-DD`）。
-- Sources should include ISO dates whenever possible (use **access date** when publication date unavailable).
+## 9. Language and Date Rules
+- Answer in Japanese when the input is Japanese; answer in English otherwise.
+- Convert relative dates (today/yesterday/tomorrow) to absolute `YYYY-MM-DD` dates using the Asia/Tokyo timezone.
+- Include ISO-formatted dates with each citation whenever possible; if no publication date exists, provide the access date.
 
 ---
 
 ## 10. Definition of Done (DoD)
-- 「HTTP 404 の意味」は `used_search=false`、`citations=[]` で返る。
-- 「本日 YYYY-MM-DD の東京の天気」は `used_search=true`、`citations.length>=1`、本文に URL + ISO 日付併記。
-- `npm run mcp:smoke` returns 3 responses: `initialize → tools/list → tools/call(answer)`.
+- Query "What does HTTP 404 mean?" returns `used_search=false` with an empty `citations` array.
+- Query "Today's Tokyo weather for YYYY-MM-DD" returns `used_search=true` with at least one citation and includes URL plus ISO date in the body.
+- `npm run mcp:smoke` produces three responses in order: `initialize -> tools/list -> tools/call(answer)`.
 
 ---
 
 ## 11. Compatibility Policy / Versioning
-- セマンティックバージョニング：
-  - 破壊的変更 → **MAJOR**
-  - 新機能追加（後方互換）→ **MINOR**
-  - バグ修正/依存更新 → **PATCH**
-- MCP プロトコル `protocolVersion` は現行 **`2025-06-18`**。将来の変更は後方互換を維持し、`initialize` でネゴシエーション。
+- Semantic Versioning rules:
+  - Breaking changes -> **MAJOR**
+  - Backward-compatible features -> **MINOR**
+  - Bug fixes / dependency updates -> **PATCH**
+- MCP protocol `protocolVersion` is currently **`2025-06-18`**. Future revisions must preserve backward compatibility and negotiate during `initialize`.
 
 ---
 
 ## 12. Reference Files (Part of Specification)
-- `docs/reference/system-policy.md` — **Instructions 本文**（貼付用・改変禁止）
-- `docs/reference/config-reference.md` — 設定スキーマと優先順位の詳細
-- `config/config.yaml.example` — 設定例（YAML）
+- `docs/reference/system-policy.md` - canonical instructions text (do not modify when quoting)
+- `docs/reference/config-reference.md` - configuration schema and precedence details
+- `config/config.yaml.example` - sample YAML configuration
 
 ---
 
 ## 13. Non-functional Requirements (Excerpt)
-- **Stable operation**: Avoid beta/alpha, use only **official releases** of SDK/runtime (npm/Node).
-- **再現性**：`--show-config` による実効設定の保存を推奨（`docs/reference/reproducibility.md`）。
-- **セキュリティ**：秘密は ENV のみ、ログ最小化。
+- **Stable operation**: Avoid beta/alpha builds and rely on official releases of the SDK/runtime.
+- **Reproducibility**: Persist effective configurations with `--show-config` as described in `docs/reference/reproducibility.md`.
+- **Security**: Keep secrets in environment variables only and minimize logging.
 
 ---
 
 <!-- Future extensions (design only): Removed from public version due to undecided items -->
 
 ## 15. npm Distribution Metadata (package.json Publication Spec)
-本セクションは npm 公開時の `package.json` の必須/推奨項目を定義する。公開前には本仕様と一致していることを確認すること。
+This section defines required and recommended `package.json` fields for npm publication. Verify compliance with this spec before releasing.
 
-### 15.1 必須項目
+### 15.1 Required Fields
 - name: `openai-responses-mcp`
-- version: セマンティックバージョニング（現行 `0.4.x`）
+- version: Semantic Versioning (current `0.4.x`)
 - description: Use the following text (don't include stage expressions like "Step N:")
   - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
 - type: `module`
@@ -470,10 +470,10 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 - repository: `{ "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" }`
 - homepage: `https://github.com/uchimanajet7/openai-responses-mcp#readme`
 - bugs: `{ "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }`
-- keywords: 適宜（例: `"mcp","openai","responses","cli"`）
-- author: 適宜
+- keywords: Supply relevant terms (for example `"mcp","openai","responses","cli"`)
+- author: Provide appropriate attribution
 
-### 15.3 公開用 `package.json` 例（抜粋）
+### 15.3 Example `package.json` for Publication (Excerpt)
 ```json
 {
   "name": "openai-responses-mcp",
@@ -497,21 +497,21 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 }
 ```
 
-### 15.4 適用・検証フロー
+### 15.4 Application and Verification Flow
 1) Identify differences from spec (confirm no "Step N:" remains in `description`).
-2) `repository/homepage/bugs` を本仕様のURLで追加。
+2) Ensure `repository`, `homepage`, and `bugs` fields match the URLs defined in this spec.
 3) Verify included items and metadata with `npm run build:clean && npm pack --dry-run`.
-4) 変更理由と影響範囲を `docs/changelog.md` に追記（ユーザー可視）。
+4) Document reasons and impact in `docs/changelog.md` so users can track changes.
 
 Note: This spec defines minimum requirements for public metadata; dependency and script details follow higher sections (functional spec).
 
 ---
 
-## 付録 A. `answer` の I/O 例
-### A.1 入力（tools/call → arguments）
+## Appendix A. `answer` I/O Example
+### A.1 Input (tools/call -> arguments)
 ```json
 {
-  "query": "本日 2025-08-09 の東京の天気は？",
+  "query": "Today's Tokyo weather on 2025-08-09?",
   "recency_days": 60,
   "max_results": 5,
   "domains": ["jma.go.jp","tenki.jp"],
@@ -521,54 +521,54 @@ Note: This spec defines minimum requirements for public metadata; dependency and
 }
 ```
 
-### A.2 出力（tools/call ← content[0].text）
+### A.2 Output (tools/call <- content[0].text)
 ```json
 {
-  "answer": "2025-08-09（JST）の東京都の天気は……（略）。\n\nSources:\n- https://www.jma.go.jp/... (2025-08-09)",
+  "answer": "The Tokyo weather on 2025-08-09 (JST) is ...\n\nSources:\n- https://www.jma.go.jp/... (2025-08-09)",
   "used_search": true,
-  "citations": [{"url":"https://www.jma.go.jp/...","title":"気象庁｜天気予報","published_at":"2025-08-09"}],
+  "citations": [{"url":"https://www.jma.go.jp/...","title":"Japan Meteorological Agency Forecast","published_at":"2025-08-09"}],
   "model": "gpt-5"
 }
 ```
 
 ---
 
-## 付録 B. エラー例（実装指針）
-- 入力不備：
+## Appendix B. Error Examples (Implementation Guidance)
+- Invalid input:
   ```json
   {"code":-32001,"message":"answer: invalid arguments","data":{"reason":"query is required"}}
   ```
-- プロファイル未設定：
+- Missing profile configuration:
   ```json
   {"code":-32052,"message":"model_profiles.answer is required"}
   ```
-- API エラー（429/5xx）：指数バックオフ後も失敗した場合：
+- API error (429/5xx) after all retries fail:
   ```json
   {"code":-32050,"message":"openai responses failed","data":{"retries":3}}
   ```
 
-## 16. バージョニング / Changelog / Lockfile 運用方針
+## 16. Versioning / Changelog / Lockfile Policy
 
-### 16.1 バージョニング（SemVer / SSOT）
-- バージョンの**唯一の出所（SSOT）**は `package.json` の `version`。
-- 破壊的変更=MAJOR、後方互換の機能追加=MINOR、修正=PATCH。
-- **Don't manually rewrite** `version` in `package-lock.json` (`npm install` auto-reconciles).
-- Node は `engines.node: ">=20"` を満たすこと。
+### 16.1 Versioning (SemVer / SSOT)
+- The **single source of truth** for the version is `package.json` `version`.
+- Breaking change = MAJOR, backward-compatible feature = MINOR, fix = PATCH.
+- **Do not manually edit** `package-lock.json` versions; `npm install` reconciles them.
+- Ensure the runtime satisfies `engines.node: "\>=20"`.
 
-### 16.2 Changelog（Keep a Changelog 準拠）
-- 位置: `docs/changelog.md`。
-- 形式: Keep a Changelog 準拠。セクション順は `Unreleased` → 過去リリース（新しい順）。
-- Timezone: Dates are Asia/Tokyo.
-- 区分例: Added / Changed / Fixed / Removed / Deprecated / Security。
-- プレリリース期間（〜v1.0.0）: `Unreleased` に集約し、必要時に `vx.y.z — YYYY-MM-DD` として確定。
-- When release confirmed: Extract relevant diff from `Unreleased` and create new section with date.
+### 16.2 Changelog (Keep a Changelog Alignment)
+- Location: `docs/changelog.md`.
+- Format follows Keep a Changelog ordering (`Unreleased` -> released versions, newest first).
+- Timezone: Asia/Tokyo.
+- Category examples: Added / Changed / Fixed / Removed / Deprecated / Security.
+- Pre-release (< v1.0.0): retain items under `Unreleased`, then convert to `vX.Y.Z - YYYY-MM-DD` when shipping.
+- When confirming a release: move relevant entries from `Unreleased` into the dated section.
 
-### 16.3 Lockfile 運用（npm lockfile v3）
-- `package-lock.json` は**VCS にコミット**する（再現性のため）。
-- Regeneration uses **`package.json` as source**. Manual lock editing prohibited.
-- Generation/regeneration procedures (ordered by reproducibility priority):
+### 16.3 Lockfile Operations (npm lockfile v3)
+- Always commit `package-lock.json` for reproducibility.
+- Regenerate the lock from `package.json`; never hand-edit the lockfile.
+- Preferred flows (most reproducible first):
 
-  1) クリーン再解決（推奨）
+  1) Clean re-resolution (recommended)
   ```bash
   rm -rf node_modules package-lock.json
   npm install
@@ -585,52 +585,50 @@ Note: This spec defines minimum requirements for public metadata; dependency and
   npm ci
   ```
 
-- CI/配布: lockfile v3 を前提（npm v9+ / Node 20+ を推奨）。
-
-以上。
+- CI and distribution assume lockfile v3 (recommend npm v9+ / Node 20+).
 
 ---
 
-## 11. CI/CD 仕様（GitHub Actions）
-本節は docs/release.md（フェーズB/C）の運用方針を正準仕様としてまとめたもの。実装時は本仕様に完全準拠する。
+## 11. CI/CD Specification (GitHub Actions)
+This section summarizes the operational rules captured in docs/release.md (phases B/C). Implementations must follow them exactly.
 
 ### 11.1 Branch/Tag Operations
-- `main`: リリース対象ブランチ。
-- `feature/*`: 機能開発ブランチ（PR前提）。
-- Tags: Use only `vX.Y.Z` format as release trigger (SemVer).
-  - バージョンの決定は手動で `package.json` を bump → `git tag vX.Y.Z` → `git push --tags`。
+- `main`: release branch.
+- `feature/*`: feature branches prepared for PRs.
+- Tags: use `vX.Y.Z` (SemVer) as the release trigger.
+  - Decide the version manually, then `git tag vX.Y.Z` followed by `git push --tags`.
 
-### 11.2 ワークフロー構成
-- `ci.yml`（PR/Push 検証）
-  - トリガ: `pull_request`（全ブランチ）/ `push`（`main`）。
-  - Node: `20.x`（actions/setup-node@v4）。
-  - 手順:
+### 11.2 Workflow Structure
+- `ci.yml` (PR/push verification)
+  - Triggers: `pull_request` (all branches) and `push` (`main`).
+  - Node: `20.x` (actions/setup-node@v4).
+  - Steps:
     1) `actions/checkout@v4`
-    2) `actions/setup-node@v4`（`node-version: 20`, `cache: npm`）
+    2) `actions/setup-node@v4` (`node-version: 20`, `cache: npm`)
     3) `npm ci`
     4) `npm run build:clean`
-    5) `npm pack --dry-run`（同梱物確認）
-    6) スモークテスト:
-       - 既定: `npm run mcp:smoke:ldjson`（OpenAI鍵不要）
-       - 任意: `npm run mcp:smoke`（`OPENAI_API_KEY` を設定した場合のみ実行）
+    5) `npm pack --dry-run` (inspect bundled files)
+    6) Smoke tests:
+       - Default: `npm run mcp:smoke:ldjson` (no API key required)
+       - Optional: `npm run mcp:smoke` (requires `OPENAI_API_KEY`)
 
-- `release.yml` (tag push: auto-release — adopts Trusted Publishing)
-  - トリガ: `push` with `tags: ["v*"]`
-  - 権限: `permissions: { contents: write, id-token: write }`
+- `release.yml` (tag push automation with Trusted Publishing)
+  - Trigger: `push` with `tags: ["v*"]`
+  - Permissions: `permissions: { contents: write, id-token: write }`
   - Node: `20.x`
-  - npm 公開設定（Trusted Publishing / OIDC）:
-    - npmjs 側で当該 GitHub リポジトリを Trusted Publishers に登録（初回のみ）
-    - Actions 側は `npm publish --provenance --access public` を実行（トークン不要）
-  - 任意: GitHub Release ノート生成
+  - Trusted Publishing / OIDC flow:
+    - Register the repository with npm Trusted Publishers (one-time setup).
+    - GitHub Actions executes `npm publish --provenance --access public` (no token needed).
+  - Optional: generate GitHub Release notes.
 
-### 11.3 シークレット/環境変数
-- `OPENAI_API_KEY`（任意・ci.yml）: `npm run mcp:smoke` 実行時に必要。未設定の場合は `mcp:smoke:ldjson` のみ実行。
-- Trusted Publishing では `NPM_TOKEN` は不要。npmjs 側で Trusted Publishers を設定する。
+### 11.3 Secrets / Environment Variables
+- `OPENAI_API_KEY` (optional in ci.yml): required for `npm run mcp:smoke`; omit to run only `mcp:smoke:ldjson`.
+- Trusted Publishing does not require `NPM_TOKEN`; configure npm once.
 
-### 11.4 参考 YAML（概要）
-The following is the implementation framework (during implementation, faithfully reflect this specification without adding duplicates or extra steps).
+### 11.4 Reference YAML (Outline)
+The snippets below illustrate the expected workflows. Mirror them without introducing additional steps.
 
-ci.yml（概要）:
+ci.yml (outline):
 ```yaml
 name: CI
 on:
@@ -641,7 +639,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # Run key-dependent tests only when key is available, so bind to job env.
+      # Run key-dependent tests only when the key is present.
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -657,7 +655,7 @@ jobs:
         run: npm run mcp:smoke
 ```
 
-release.yml（概要 — Trusted Publishing）:
+release.yml (outline - Trusted Publishing):
 ```yaml
 name: Release
 on:
@@ -680,15 +678,15 @@ jobs:
       - run: npm publish --provenance --access public
 ```
 
-### 11.5 成果物と公開ポリシー
-- `package.json.files` に指定された最小セットのみを公開（`build/`, `config/*.example`, `README.md`, `LICENSE`, `package.json`）。
-- `prepublishOnly`: Retain `npm run build` (local publish has same behavior).
-- 公開後の検証: `npx openai-responses-mcp@latest --stdio` で起動確認。
+### 11.5 Published Artifacts and Policy
+- Publish only the minimal set listed in `package.json.files` (`build/`, `config/*.example`, `README.md`, `LICENSE`, `package.json`).
+- Keep `prepublishOnly` as `npm run build` (local publish behaves the same).
+- After release, verify with `npx openai-responses-mcp@latest --stdio`.
 
-### 11.6 運用フロー（再掲・確定）
-1) feature/* → Pull Request（`ci.yml` 実行）
-2) `main` にマージ後、`package.json` を semver で bump
-3) `git tag vX.Y.Z && git push --tags`（`release.yml` 実行 → npm publish（Trusted Publishing））
-4) Actions の成功確認 → README の npx 例で動作確認
+### 11.6 Operational Flow (Confirmed)
+1) feature/* -> Pull Request (runs `ci.yml`).
+2) Merge into `main`, bump `package.json` via SemVer.
+3) `git tag vX.Y.Z && git push --tags` (runs `release.yml` -> npm publish via Trusted Publishing).
+4) Confirm the Actions run succeeded and re-run the README `npx` example.
 
-Note: Adding `repository`/`homepage`/`bugs` to `package.json` is recommended for npm page display improvement, but implementation should be done separately with agreement.
+Note: Adding `repository`, `homepage`, and `bugs` fields to `package.json` improves the npm page, but coordinate separately before implementing.

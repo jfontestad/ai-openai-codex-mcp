@@ -1,5 +1,5 @@
 
-# Installation Instructions (Local / npm) — `docs/reference/installation.md`
+# Installation Instructions (Local / npm) - `docs/reference/installation.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
 This document provides **complete procedures** for building and using **openai-responses-mcp** in local environments.
@@ -36,12 +36,12 @@ npx openai-responses-mcp@latest --stdio
 ### 2.1 Download and Extract ZIP from GitHub
 ```
 openai-responses-mcp/
-  ├─ src/ ...            # TypeScript source
-  ├─ build/ ...          # Build artifacts (empty initially)
-  ├─ docs/ ...           # Documentation
-  ├─ config/config.yaml.example
-  ├─ package.json
-  └─ tsconfig.json
+  - src/ ...            # TypeScript source
+  - build/ ...          # Build artifacts (empty initially)
+  - docs/ ...           # Documentation
+  - config/config.yaml.example
+  - package.json
+  - tsconfig.json
 ```
 
 > Repository operation is optional. Here we assume ZIP extraction.
@@ -87,7 +87,7 @@ YAML is **optional**. It works without it (TS defaults + ENV/CLI).
   - Windows: `%APPDATA%\openai-responses-mcp\config.yaml`
 - Explicit: `--config /abs/path/config.yaml`
 
-### 5.2 サンプル
+### 5.2 Sample
 ```yaml
 model_profiles:
   answer:
@@ -180,7 +180,7 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 or more
 ```
-If you can confirm 3 responses of `initialize → tools/list → tools/call(answer)`, the stdio layer is healthy.
+If you can confirm 3 responses of `initialize -> tools/list -> tools/call(answer)`, the stdio layer is healthy.
 
 ---
 

@@ -1,5 +1,5 @@
 
-# Environment Setup (Local Development & Reproducibility) — `docs/reference/environment-setup.md`
+# Environment Setup (Local Development & Reproducibility) - `docs/reference/environment-setup.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
 This document provides OS-specific concrete procedures for environment preparation to run **openai-responses-mcp** stably in local environments.

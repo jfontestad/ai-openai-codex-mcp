@@ -1,5 +1,5 @@
 
-# Claude Code / Claude Desktop Integration Guide — `docs/reference/client-setup-claude.md`
+# Claude Code / Claude Desktop Integration Guide - `docs/reference/client-setup-claude.md`
 Last Updated: 2025-08-09 (Asia/Tokyo)
 
 This document provides complete step-by-step instructions for registering and using **openai-responses-mcp** (stdio) with Claude clients.
@@ -15,8 +15,8 @@ this document strictly describes **configuration formats and verification proced
 ---
 
 ## 2. MCP Server Registration in Claude Clients (Common Format)
-Claude-family clients (Claude Code / Claude Desktop) commonly register servers using a **`mcpServers`** 
-map structure. **Open the configuration file from the client UI (Settings → Developer) to find the exact location**.
+Claude-family clients (Claude Code / Claude Desktop) commonly register servers using a **`mcpServers`**
+map structure. **Open the configuration file from the client UI (Settings -> Developer) to find the exact location**.
 Do not specify paths directly - **always edit the file opened through the UI**.
 
 ### 2.1 Configuration Example (Minimal/Recommended)
@@ -80,22 +80,22 @@ model_profiles:
 ## 2.4 Environment Variables (Minimum Required)
 | Environment Variable | Required | Description |
 |---|---|---|
-| `OPENAI_API_KEY` | ✅ | OpenAI API key |
+| `OPENAI_API_KEY` | [OK] | OpenAI API key |
 
 ---
 
 ## 3. Restart and Application
-- After saving the configuration file, **completely exit Claude client → restart**.
-- On startup, the MCP server will launch and **initialize → tools/list** will be sent.
+- After saving the configuration file, **completely exit Claude client -> restart**.
+- On startup, the MCP server will launch and **initialize -> tools/list** will be sent.
 
 ---
 
 ## 4. Operation Verification (Client-Side Observation)
 - Open the client's **developer logs/developer tools** (accessed through the UI).
 - The following 3 messages should appear with **Content-Length** headers:
-  1) `initialize` (client → server)
-  2) `tools/list` (client → server)
-  3) `result` (server → client; tool list should contain 3 tools)
+  1) `initialize` (client -> server)
+  2) `tools/list` (client -> server)
+  3) `result` (server -> client; tool list should contain 3 tools)
 
 **Expected Value (Example)**
 ```http

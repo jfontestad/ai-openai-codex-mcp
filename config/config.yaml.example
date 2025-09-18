@@ -45,7 +45,7 @@ model_profiles:
 #     model: gpt-5
 #     reasoning_effort: medium
 #     verbosity: medium
-# # answer_detailed, answer_quick are omitted → operates with answer settings
+# # answer_detailed, answer_quick are omitted -> operates with answer settings
 
 policy:
   # Whether to prioritize search when uncertain (prevents missing current events)

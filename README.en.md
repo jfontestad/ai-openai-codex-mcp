@@ -202,7 +202,7 @@ npm publish           # Publish (unscoped)
 
 ## Troubleshooting (Essentials)
 - `Missing API key`: `OPENAI_API_KEY` not set. Review your environment variables
-- `Cannot find module build/index.js`: Not built → run `npm run build`
+- `Cannot find module build/index.js`: Not built -> run `npm run build`
 - Framing mismatch: Check with `npm run mcp:smoke` and rebuild
 - Frequent 429/5xx: Adjust `request.max_retries`/`timeout_ms` (YAML)
 
