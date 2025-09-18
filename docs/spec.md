@@ -204,10 +204,10 @@ model_profiles:
 }
 ```
 
-**ツール選択指針**:
-- **一般的な質問**: `answer`を選択（基準ツール）
-- **複雑な分析・比較**: `answer_detailed`を選択
-- **簡潔な回答要求**: `answer_quick`を選択
+**Tool Selection Guidelines**:
+- **General questions**: Select `answer` (standard tool)
+- **Complex analysis/comparison**: Select `answer_detailed`
+- **Concise answers required**: Select `answer_quick`
 
 ### 3.2 Output Contract (JSON within MCP Text)
 - `tools/call` responses store **JSON string** in `content[0].text`.
@@ -318,29 +318,29 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 ```
 
 ### 5.6 Model Compatibility and Feature Application Scope
-- `verbosity` の適用: モデルIDが `gpt-5` 系（接頭辞が `gpt-5`）のときのみ適用。
-- `reasoning_effort` の適用: `gpt-5` / `o3` / `o4` 系モデルで適用。それ以外では無視されるか、OpenAI側でエラーになり得る。
-- 非対応モデルを指定した場合: OpenAI Responses API 側の検証でエラーとなる可能性があるため、対応モデルIDのみを指定すること。
-- マルチプロファイルの継承: `answer_detailed`/`answer_quick` が未定義の場合は `answer` の設定を継承して動作する（現行実装）。
+- `verbosity` application: Applied only when model ID is `gpt-5` series (prefix is `gpt-5`).
+- `reasoning_effort` application: Applied for `gpt-5` / `o3` / `o4` series models. Ignored or may cause OpenAI-side errors for others.
+- When unsupported model specified: May result in validation errors on OpenAI Responses API side, so specify only supported model IDs.
+- Multi-profile inheritance: When `answer_detailed`/`answer_quick` are undefined, inherits `answer` settings and operates (current implementation).
 
 ---
 
 ## 6. Execution Flow (Multi-profile Support)
-1. **ツール判定**：MCPクライアントが`answer`/`answer_detailed`/`answer_quick`から選択。
+1. **Tool determination**: MCP client selects from `answer`/`answer_detailed`/`answer_quick`.
 2. **プロファイル決定**：選択されたツール名に対応する`model_profiles`設定を取得。未設定の場合はエラー。
 3. **入力検証**: 各ツールのinputSchemaに従って検証。
 4. **Responses 呼び出し（試行）**：
    - `model`: プロファイルの`model`値（例: `o3`, `gpt-4.1-mini`）
    - `instructions`: System Policy（前述）
-   - `input`: ユーザ `query`（必要なら追加ヒントに recency/domains を併記）
+   - `input`: User `query` (with additional hints for recency/domains if needed)
    - `tools`: `[{"type":"web_search"}]`（常時許可）
    - `text`: `{"verbosity": <profile.verbosity>}`（モデル対応時のみ）
    - `reasoning`: `{"effort": <profile.reasoning_effort>}`（モデル対応時のみ）
    - `timeout_ms`: 設定値
-5. **注釈解析**：`url_citation` 等から **URL / title / published_at** を抽出。
+5. **Annotation analysis**: Extract **URL / title / published_at** from `url_citation` etc.
 6. **`used_search` 判定** と **`citations` 整形**（最大件数適用）。
 7. **応答 JSON 構築**（本文・`used_search`・`citations[]`・`model`）。
-8. **返送**：MCP レスポンスの `content[0].text` に **JSON 文字列**として格納。
+8. **Return**: Store as **JSON string** in MCP response `content[0].text`.
 
 ---
 
@@ -355,14 +355,14 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 - サーバー側の動作
   - `tools/call` 開始時に、該当 `id` に対する `AbortController` を作成して登録（`id → controller`）。
-  - キャンセル通知（`requestId` が一致）を受領したら、登録済み `AbortController.abort()` を呼び、中断フラグを立てる。
+  - When cancellation notification (`requestId` matches) is received, call registered `AbortController.abort()` and set interruption flag.
   - 中断済みの要求については、以後その `id` に対する `result`/`error` の送信を抑止する（遅延完了は破棄）。
   - 既に完了・未登録の `requestId` に対する通知は無視する（正常）。
   - `initialize` はキャンセル不可。
 
 - OpenAI 呼び出しとの連携
   - `AbortSignal` を OpenAI SDK（Responses API）呼び出しに伝搬する。
-  - リトライ前に `signal.aborted` を確認し、キャンセル時は即座に中断（再試行しない）。
+  - Check `signal.aborted` before retry, and immediately interrupt on cancellation (no retries).
 
 - トランスポート注意
   - 物理的な切断（disconnection）はキャンセルを意味しない。キャンセル意図がある場合、クライアントは必ず `notifications/cancelled` を送ること。

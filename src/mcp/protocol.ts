@@ -55,7 +55,7 @@ export function readMessages(onMessage: (msg: JsonRpcMessage) => void): void {
         if (alt !== -1) { headerEnd = alt; sepLen = 2; }
       }
       if (headerEnd === -1) {
-        // フレーミングヘッダが無い場合、LF区切りのプレーンJSONを許容するフォールバック
+        // Fallback to allow plain JSON with LF delimiter when no framing header
         const lf = buffer.indexOf("\n");
         if (lf !== -1) {
           const line = buffer.slice(0, lf).toString("utf8").trim();
@@ -71,7 +71,7 @@ export function readMessages(onMessage: (msg: JsonRpcMessage) => void): void {
           onMessage(msg);
           continue; // 次のメッセージへ
         } catch {
-              // 行単位JSONでなければ、次のデータを待つ
+              // If not line-unit JSON, wait for next data
             }
           }
         }

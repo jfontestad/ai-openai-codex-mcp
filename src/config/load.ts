@@ -74,8 +74,8 @@ function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
     if (!Number.isNaN(n) && n >= 1 && n <= 10) copy.policy.max_citations = n;
   }
   // DEBUG の統一仕様:
-  // - `DEBUG` が "1"/"true" なら server.debug = true
-  // - それ以外の非空文字列なら、server.debug = true かつ server.debug_file に値を格納
+  // - If `DEBUG` is "1"/"true", then server.debug = true
+  // - Otherwise, if non-empty string, then server.debug = true and store value in server.debug_file
   if (env.DEBUG !== undefined) {
     const vraw = String(env.DEBUG);
     const v = vraw.toLowerCase();

@@ -38,7 +38,7 @@ export async function callResponsesWithRetry(
   // model_profiles構造に基づくリトライ（フォールバック機能削除）
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      // 事前にキャンセル済みなら即中断
+      // Immediately abort if already cancelled
       if (externalSignal?.aborted) {
         const err = new Error("Aborted before request");
         (err as any).name = "AbortError";
@@ -71,7 +71,7 @@ export async function callResponsesWithRetry(
         } catch {}
       }
       const aborted = externalSignal?.aborted || e?.name === "AbortError" || e?.name === "APIUserAbortError";
-      // キャンセル時は即中断（リトライしない）
+      // Immediately abort on cancellation (no retries)
       if (aborted) break;
       const retriable = (e?.status && (e.status === 429 || e.status >= 500));
       if (!retriable || attempt === maxRetries) break;

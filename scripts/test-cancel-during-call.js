@@ -22,7 +22,7 @@ let sawCallResponse = false;
 child.stdout.on('data', b => {
   const t = b.toString('utf8');
   process.stdout.write(b);
-  // 応答抑止の確認: id:3 の result/error が出たら検出
+  // Response suppression check: detect if result/error for id:3 appears
   if (/"id"\s*:\s*3/.test(t) && (/"result"|"error"/.test(t))) {
     sawCallResponse = true;
     console.error('[test] UNEXPECTED: received response for id=3 after cancel');
@@ -44,7 +44,7 @@ setTimeout(() => {
   }, 40);
 }, 80);
 
-// 3) 観測用の時間をおいて終了（抑止されていれば id:3 の応答は出ない）
+// 3) Allow observation time and exit (if suppressed, id:3 response won't appear)
 setTimeout(() => {
   try { child.kill(); } catch {}
   const ok = !sawCallResponse;

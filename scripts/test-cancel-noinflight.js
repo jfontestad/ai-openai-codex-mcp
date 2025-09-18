@@ -29,7 +29,7 @@ child.stderr.on('data', b => process.stderr.write(b));
 // initialize
 child.stdin.write(enc({ jsonrpc:'2.0', id:1, method:'initialize', params:{ protocolVersion:'2025-06-18', capabilities:{} } }));
 
-// inflightに存在しないID(999)でキャンセル通知
+// Cancellation notification with ID(999) that doesn't exist in inflight
 setTimeout(() => {
   child.stdin.write(enc({ jsonrpc:'2.0', method:'notifications/cancelled', params:{ requestId: 999, reason: 'test-no-inflight' } }));
 }, 100);

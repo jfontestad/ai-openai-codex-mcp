@@ -29,7 +29,7 @@ function start() {
       if (!m) { console.log("<no content-length header>\n" + header); return; }
       const len = parseInt(m[1], 10);
       const start = headerEnd + 4;
-      if (buf.length < start + len) break; // まだ足りない
+      if (buf.length < start + len) break; // Still insufficient
       const body = buf.slice(start, start + len).toString("utf8");
       buf = buf.slice(start + len);
       try {
@@ -39,7 +39,7 @@ function start() {
         } else if (msg?.result) {
           console.log("[tools/call result]\n" + JSON.stringify(msg.result, null, 2));
         } else {
-          // initialize / tools/list など
+          // initialize / tools/list etc.
           console.log("[message]\n" + JSON.stringify(msg, null, 2));
         }
       } catch (e) {
