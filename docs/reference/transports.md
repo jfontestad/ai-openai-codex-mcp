@@ -1,5 +1,5 @@
 
-# Transports — `docs/reference/transports.md`
+# Transports - `docs/reference/transports.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
 This document describes the transport specifications implemented by **openai-responses-mcp**.
@@ -54,7 +54,7 @@ Content-Length: 458
 ```http
 Content-Length: 156
 
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"answer","arguments":{"query":"HTTP 404 の意味は？","style":"summary"}}}
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"answer","arguments":{"query":"What does HTTP 404 mean?","style":"summary"}}}
 ```
 **Sent (Example - Success)**
 ```http
@@ -94,11 +94,11 @@ Content-Length: 28
 ### 1.8 Logging & Troubleshooting
 - **Debug mode**: Enabled by unified judgment of CLI/ENV/YAML (priority: CLI > ENV > YAML). Follows a single judgment (`isDebug()`) determined at startup, outputting step-by-step logs to stderr (e.g., `stdin chunk=...` / `headerEnd=...` / `recv method=...` / `send (line|framed) bytes=...` / `send json=...`).
 - **Typical framing issues**: `Content-Length` mismatch, missing `\r\n\r\n`, BOM contamination. Also automatic fallback to line-delimited JSON.
-- **Testing**: Use `npm run mcp:smoke` to verify 3 responses: `initialize → tools/list → tools/call`.
+- **Testing**: Use `npm run mcp:smoke` to verify 3 responses: `initialize -> tools/list -> tools/call`.
 
 ---
 
-<!-- HTTP（streamable_http）に関する設計案は docs/_drafts/transports-http.md へ退避 -->
+<!-- HTTP (streamable_http) design draft moved to docs/_drafts/transports-http.md -->
 
 ## 3. Compatibility Policy
 - `protocolVersion` is currently `2025-06-18`. For future changes, negotiate in `initialize` for **backward compatibility**.
@@ -107,4 +107,4 @@ Content-Length: 28
 ---
 
 ## 4. Testing (Transport-level)
-- **stdio**: `scripts/mcp-smoke.js` provides minimal testing. Confirms success of `initialize`→`tools/list`→`tools/call`.
+- **stdio**: `scripts/mcp-smoke.js` provides minimal testing. Confirms success of `initialize`->`tools/list`->`tools/call`.

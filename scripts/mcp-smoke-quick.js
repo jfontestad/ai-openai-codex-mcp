@@ -50,7 +50,7 @@ function start() {
 
   child.stderr.on("data", (buf) => process.stderr.write(buf));
 
-  // initialize → tools/list → tools/call(answer_quick)
+  // initialize -> tools/list -> tools/call(answer_quick)
   child.stdin.write(encode({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {} } }));
   setTimeout(() => {
     child.stdin.write(encode({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }));

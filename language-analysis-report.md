@@ -126,7 +126,7 @@ Translation of comments and console output in utility scripts.
 - **Formatting:** Maintain markdown structure and code block formatting
 
 ### Translation Guidelines
-- **Japanese → English:** Primary translation direction
+- **Japanese -> English:** Primary translation direction
 - **Bilingual approach:** Consider maintaining both languages where critical
 - **Technical accuracy:** Ensure technical concepts are accurately conveyed
 - **Consistency:** Maintain consistent terminology across all files

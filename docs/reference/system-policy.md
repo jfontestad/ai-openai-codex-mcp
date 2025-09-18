@@ -1,5 +1,5 @@
 
-# System Policy — Reference (SSOT: Code)
+# System Policy - Reference (SSOT: Code)
 Last updated: 2025-08-09 (Asia/Tokyo)
 
 This project unifies the System Policy source-of-truth (SSOT) on the **code side**. The Responses API `instructions` are given the constants defined in code **as-is**.
@@ -24,7 +24,7 @@ This document is a reference guide. It does not maintain copies of the body text
 Please refer to `SYSTEM_POLICY` in `src/policy/system-policy.ts` (the body text is not duplicated in this document).
 
 Tips:
-- Change procedure: Edit `SYSTEM_POLICY` in code → Build/restart
+- Change procedure: Edit `SYSTEM_POLICY` in code -> Build/restart
 - Version check: Reference `SYSTEM_POLICY_REV`
 
 ---
@@ -44,7 +44,7 @@ Tips:
 ---
 
 ## 5. Output Contract (Specification Server Implementation Depends On)
-- Main text (natural language) → Bullet points (evidence/procedures) → **Sources:** (only when web_search is used) in that order.
+- Main text (natural language) -> Bullet points (evidence/procedures) -> **Sources:** (only when web_search is used) in that order.
 - **Do not output Sources** when search is not used.
 - MCP response `citations[]` stores `{url, title?, published_at?}`. `published_at` is ISO string or `null`/omitted.
 - `used_search` is `true` when 1 or more `url_citation` is obtained, or when `web_search_call` is included.
@@ -53,7 +53,7 @@ Tips:
 
 ## 6. Date & Time Rules
 - Relative dates in output are **always** converted to absolute dates (`YYYY-MM-DD`). Timezone is fixed to **Asia/Tokyo**.
-- Example: "Today" → "2025-08-09 (JST)" with parenthetical supplements as needed.
+- Example: "Today" -> "2025-08-09 (JST)" with parenthetical supplements as needed.
 
 ---
 
@@ -71,5 +71,5 @@ Tips:
 ---
 
 ## 9. Test Perspectives (DoD Excerpt)
-- "Meaning of HTTP 404" → `used_search=false`, `citations=[]`.
-- "Today YYYY-MM-DD Tokyo weather" → `used_search=true`, `citations>=1`, URL + ISO date included in body text.
+- "Meaning of HTTP 404" -> `used_search=false`, `citations=[]`.
+- "Today YYYY-MM-DD Tokyo weather" -> `used_search=true`, `citations>=1`, URL + ISO date included in body text.

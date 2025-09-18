@@ -1,5 +1,5 @@
 
-# Reproducibility & Rebuild Guide — `docs/reference/reproducibility.md`
+# Reproducibility & Rebuild Guide - `docs/reference/reproducibility.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
 This document defines operational standards and specific procedures for **reproducing the results and behavior** of **openai-responses-mcp** as closely as possible.
@@ -15,7 +15,7 @@ Factors that may hinder reproducibility are identified upfront. Complete determi
 - **Time dependence**: Relative dates are absolutized to JST (Asia/Tokyo), but **"today"** changes results when the date changes.
 - **API versions**: Minor changes to OpenAI SDK/Responses API may alter annotation formats.
 
-→ This repository aims for "sufficiently equivalent reproduction" through the following **mitigation strategies**.
+-> This repository aims for "sufficiently equivalent reproduction" through the following **mitigation strategies**.
 
 ---
 

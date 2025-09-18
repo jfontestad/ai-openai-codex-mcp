@@ -1,5 +1,5 @@
 
-# Verification Procedures (E2E) — openai-responses-mcp
+# Verification Procedures (E2E) - openai-responses-mcp
 
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 This file shows local reproduction and verification procedures. Output prioritizes forms that allow **machine inspection of JSON**, with `jq` verification examples also included.
@@ -63,7 +63,7 @@ Minimal connectivity that actually calls OpenAI API. `scripts/mcp-smoke.js` send
 export OPENAI_API_KEY="sk-..."
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 
-# Verify that 3 responses (initialize → tools/list → tools/call) flow with Content-Length
+# Verify that 3 responses (initialize -> tools/list -> tools/call) flow with Content-Length
 grep -c '^Content-Length:' /tmp/mcp-smoke.out
 ```
 
@@ -93,7 +93,7 @@ node build/index.js --show-config --config /tmp/mcp-config.yaml 2> effective.jso
 ---
 
 ## 5. Timeout/Retry Observation (Optional, requires OPENAI_API_KEY)
-Due to API-side circumstances, reproduction may be difficult, but you can observe Abort → retry by reducing `OPENAI_API_TIMEOUT`.
+Due to API-side circumstances, reproduction may be difficult, but you can observe Abort -> retry by reducing `OPENAI_API_TIMEOUT`.
 ```bash
 export OPENAI_API_KEY="sk-..."
 OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
@@ -103,9 +103,9 @@ OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
 ---
 
 ## 6. Failure Troubleshooting
-- `Missing API key: set OPENAI_API_KEY` → Environment variable not set
-- `ECONNRESET` / `AbortError` → Network/timeout
-- `Unknown tool` → `tools/call` name error (only `answer` supported)
+- `Missing API key: set OPENAI_API_KEY` -> Environment variable not set
+- `ECONNRESET` / `AbortError` -> Network/timeout
+- `Unknown tool` -> `tools/call` name error (only `answer` supported)
 
 ---
 

@@ -3,8 +3,8 @@
 Change history for this project. Dates are based on Asia/Tokyo.
 
 ## [0.6.0] - 2025-08-27
-- feat(logging): Unified debug determination. Made CLI/ENV/YAML equivalent and standardized priority as CLI > ENV > YAML (final decision at startup → subsequent isDebug() reference).
-- refactor(logging): Added `src/debug/state.ts` to centralize debug output paths including stderr→file TEE mirroring.
+- feat(logging): Unified debug determination. Made CLI/ENV/YAML equivalent and standardized priority as CLI > ENV > YAML (final decision at startup -> subsequent isDebug() reference).
+- refactor(logging): Added `src/debug/state.ts` to centralize debug output paths including stderr->file TEE mirroring.
 - breaking(logging): Removed support for `DEBUG_MCP` / `MCP_DEBUG` environment variables (only `DEBUG=1|true|<path>` going forward).
 - docs: Updated `docs/spec.md` / `docs/reference/*` / `README.*` to single determination/equivalence specification. Removed `server.log_level` description.
 - config: Updated `config/config.yaml.example` to `server.debug` / `server.debug_file` / `show_config_on_start`.
@@ -25,7 +25,7 @@ Change history for this project. Dates are based on Asia/Tokyo.
 - chore: Added `scripts/mcp-smoke-ping.js` to smoke tests (for `ping` verification).
 
 ## [0.4.7] - 2025-08-19
-- docs: Unified expression ("thin MCP server" → "lightweight MCP server")
+- docs: Unified expression ("thin MCP server" -> "lightweight MCP server")
   - Targets: `README.md`, `docs/spec.md`, `package.json(description)`
 - meta: Updated version and last update date in `docs/spec.md`
 - note: No changes to functionality, API, or configuration specifications (documentation only)

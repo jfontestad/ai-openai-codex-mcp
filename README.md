@@ -70,7 +70,7 @@ Please refer to this when using from MCP clients.
 }
 ```
 
-- `claude code cli` で以下を実行
+- Run the following with the Claude Code CLI
 
 ```sh
 claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- npx openai-responses-mcp@latest --stdio
@@ -118,7 +118,7 @@ npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/
 ### 5) Configuration (YAML optional)
 Default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\openai-responses-mcp\config.yaml`
 
-最小例:
+Minimal example:
 
 ```yaml
 model_profiles:
@@ -131,9 +131,9 @@ request:
   timeout_ms: 300000
   max_retries: 3
 ```
-サンプル: `config/config.yaml.example`
+Sample: `config/config.yaml.example`
 
-外部 policy（任意）:
+Optional external policy:
 
 ```yaml
 policy:
@@ -142,22 +142,22 @@ policy:
     path: ~/.config/openai-responses-mcp/policy.md
     merge: append   # replace | prepend | append
 ```
-サンプル: `config/policy.md.example`
+Sample: `config/policy.md.example`
 
 ### 6) Logging and Debug
-- デバッグON（画面出力）: `--debug` / `DEBUG=1|true` / YAML `server.debug: true`（優先度: CLI > ENV > YAML, 単一判定）
-- デバッグON（ファイル＋画面ミラー）: `--debug ./_debug.log` または `DEBUG=./_debug.log`
-- デバッグOFF: 最小限の稼働確認ログのみ
+- Debug ON (console output): `--debug` / `DEBUG=1|true` / YAML `server.debug: true` (priority: CLI > ENV > YAML, unified determination)
+- Debug ON (console + file mirror): `--debug ./_debug.log` or `DEBUG=./_debug.log`
+- Debug OFF: only minimal operational logging
 
-補足（YAMLでの制御）:
-- `server.debug: true|false`（YAMLのみでも全モジュールに反映）
-- `server.debug_file: <path|null>`（指定時は stderr をファイルへTEEミラー）
+Additional notes (YAML control):
+- `server.debug: true|false` (applies to all modules even when set only in YAML)
+- `server.debug_file: <path|null>` (mirrors stderr to file when specified)
 
 ---
 
 ## For Developers (Clone and Develop)
 
-### 1) 取得とビルド
+### 1) Fetch and Build
 ```bash
 git clone https://github.com/<your-org>/openai-responses-mcp.git
 cd openai-responses-mcp
@@ -165,10 +165,10 @@ npm i
 npm run build
 ```
 
-### 2) スモークテスト（MCPフレーミング）
+### 2) Smoke Test (MCP Framing)
 ```bash
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
-grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 以上でOK
+grep -c '^Content-Length:' /tmp/mcp-smoke.out   # OK when count is 3 or more
 ```
 
 ### 3) Local Startup (stdio)
@@ -177,34 +177,34 @@ export OPENAI_API_KEY="sk-..."
 node build/index.js --stdio --debug ./_debug.log
 ```
 
-### 4) デモ（OpenAIへの問い合わせサンプル）
+### 4) Demo (sample query to OpenAI)
 ```bash
-npm run mcp:quick -- "今日の東京の気温"
-npm run mcp:smoke:ldjson   # NDJSON互換の疎通確認
+npm run mcp:quick -- "Today's temperature in Tokyo"
+npm run mcp:smoke:ldjson   # NDJSON-compatible connectivity check
 ```
 
-### 5) ドキュメント（参照先）
-- 正準仕様: `docs/spec.md`
-- リファレンス: `docs/reference/config-reference.md` / `docs/reference/client-setup-claude.md`
-- 検証手順: `docs/verification.md`
+### 5) Documentation (references)
+- Canonical specification: `docs/spec.md`
+- References: `docs/reference/config-reference.md` / `docs/reference/client-setup-claude.md`
+- Verification procedure: `docs/verification.md`
 
 ---
 
 ## For Maintainers (Distribution)
 
-### npm パッケージ確認と公開
+### npm Package Verification and Publishing
 ```bash
-npm pack --dry-run    # 同梱物を確認（build/ と README/LICENSE/サンプルのみ）
+npm pack --dry-run    # Verify bundled files (build/ plus README/LICENSE/samples only)
 npm publish           # Publish (no scope)
 ```
 
 ---
 
 ## Troubleshooting (Key Points)
-- `Missing API key`: `OPENAI_API_KEY` 未設定。ENV を見直し
-- `Cannot find module build/index.js`: ビルド未実行 → `npm run build`
-- フレーミング不一致: `npm run mcp:smoke` で確認し再ビルド
-- 429/5xx 多発: `request.max_retries`/`timeout_ms` を調整（YAML）
+- `Missing API key`: `OPENAI_API_KEY` not set. Verify environment variables.
+- `Cannot find module build/index.js`: Build not run -> execute `npm run build`.
+- Framing mismatch: Run `npm run mcp:smoke` to confirm and rebuild as needed.
+- Frequent 429/5xx responses: Adjust `request.max_retries` / `timeout_ms` (YAML).
 
 ---
 
@@ -214,5 +214,5 @@ MIT
 ## Notes
 
 <p><a href="https://uchimanajet7.hatenablog.com/entry/2025/08/21/203000
-">openai-responses-mcp 開発メモ - Codex と Claude Code を両方使って作ってみた
+">openai-responses-mcp development notes - built with both Codex and Claude Code
 </a></p>
