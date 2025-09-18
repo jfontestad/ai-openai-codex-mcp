@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "test:unit": "node --import tsx --test tests/config-codex.test.ts tests/codex-paths.test.ts tests/codex-loader.test.ts tests/auth-resolve.test.ts",
     "clean": "node scripts/clean.js",
     "build:clean": "npm run clean && tsc -p tsconfig.json",
     "dev": "tsx src/index.ts",
@@ -23,9 +24,10 @@
     "mcp:smoke": "node scripts/mcp-smoke.js",
     "mcp:smoke:ldjson": "node scripts/mcp-smoke-ldjson.js",
     "mcp:smoke:ping": "node scripts/mcp-smoke-ping.js",
+    "health": "node --import tsx scripts/health-check.ts",
     "mcp:quick": "node scripts/mcp-smoke-quick.js",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && node scripts/test-tools-list.js && node scripts/test-cancel-noinflight.js && node scripts/test-cancel-during-call.js",
+    "test": "npm run test:unit && npm run build && node scripts/test-tools-list.js && node scripts/test-cancel-noinflight.js && node scripts/test-cancel-during-call.js",
     "test:tools-list": "node scripts/test-tools-list.js",
     "test:cancel-noinflight": "node scripts/test-cancel-noinflight.js",
     "test:cancel-during-call": "node scripts/test-cancel-during-call.js"

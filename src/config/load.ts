@@ -148,4 +148,22 @@ function validateConfig(cfg: Config): void {
       throw new Error(`Invalid model_profiles.${name}.reasoning_effort: ${eff} (allowed: low|medium|high)`);
     }
   }
+
+  const codex = cfg.codex as any;
+  if (!codex) return;
+  if (typeof codex.cacheTtlMs !== "number" || codex.cacheTtlMs <= 0) {
+    throw new Error(`codex.cacheTtlMs must be positive (ms)`);
+  }
+  if (typeof codex.cacheMaxEntries !== "number" || codex.cacheMaxEntries < 1) {
+    throw new Error(`codex.cacheMaxEntries must be >= 1`);
+  }
+  if (typeof codex.validationRateLimitMs !== "number" || codex.validationRateLimitMs < 0) {
+    throw new Error(`codex.validationRateLimitMs must be >= 0`);
+  }
+  if (codex.healthCheckPort !== undefined) {
+    const port = Number(codex.healthCheckPort);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new Error(`codex.healthCheckPort must be an integer between 1 and 65535`);
+    }
+  }
 }
