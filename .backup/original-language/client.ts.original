@@ -35,7 +35,7 @@ export async function callResponsesWithRetry(
   const maxRetries = cfg.request.max_retries;
   let lastError: any;
 
-  // Retry based on model_profiles structure (fallback functionality removed)
+  // model_profiles構造に基づくリトライ（フォールバック機能削除）
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       // Immediately abort if already cancelled
@@ -55,14 +55,14 @@ export async function callResponsesWithRetry(
       return { response: resp, model: args.model };
     } catch (e: any) {
       lastError = e;
-      // Debug output based on single determination
+      // 単一判定に基づくデバッグ出力
       if (isDebug()) {
         try {
           const status = (e && (e.status ?? e.code)) ?? '-';
           const ename = e?.name ?? '-';
           const etype = e?.error?.type ?? '-';
           const emsg = (e?.message ?? String(e)).slice(0, 400);
-          // When compatible with OpenAI SDK APIError with body, extract only the beginning
+          // OpenAI SDK APIError 互換で body を持つ場合、先頭のみ抜粋
           const bodyRaw: any = (e?.error ?? e?.response?.data ?? e?.response?.body ?? undefined);
           let bodyExcerpt = '';
           if (typeof bodyRaw === 'string') bodyExcerpt = bodyRaw.slice(0, 300);

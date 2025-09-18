@@ -104,9 +104,9 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
 
 ---
 
-## 5. YAML の完全例
+## 5. Complete YAML Examples
 
-### 5.1 最小
+### 5.1 Minimal
 ```yaml
 model_profiles:
   answer:
@@ -115,13 +115,13 @@ model_profiles:
     verbosity: medium
 ```
 
-### 5.2 代表例（推奨）
+### 5.2 Representative Example (Recommended)
 ```yaml
 openai:
   api_key_env: OPENAI_API_KEY
   base_url: https://api.openai.com/v1
 
-# マルチプロファイル設定（v0.4.0+）
+# Multi-profile configuration (v0.4.0+)
 model_profiles:
   answer_detailed:
     model: gpt-5
@@ -160,11 +160,11 @@ server:
 
 ---
 
-## 6. 環境変数（ENV）
+## 6. Environment Variables (ENV)
 
 > The ENV variables listed here take **priority over YAML** when set.
 
-| ENV 名 | 型/範囲 | 反映先 | 説明 |
+| ENV Name | Type/Range | Mapped To | Description |
 |---|---|---|---|
 | `OPENAI_API_KEY` | string | OpenAI authentication | **Required**. ENV name pointed to by `openai.api_key_env` (configurable). |
 | `OPENAI_API_TIMEOUT` | number(ms) | `request.timeout_ms` | >0 |
@@ -172,35 +172,35 @@ server:
 | `SEARCH_MAX_RESULTS` | integer | `search.defaults.max_results` | 1..10 |
 | `SEARCH_RECENCY_DAYS` | integer | `search.defaults.recency_days` | >=0 |
 | `MAX_CITATIONS` | integer | `policy.max_citations` | 1..10 |
-| `DEBUG` | 1/true/path | `server.debug`/`server.debug_file` | `1|true` でON、`<path>` でファイルにTEEミラー |
-| `MODEL_ANSWER` | string | `model_profiles.answer.model` | クイック上書き（恒久はYAMLで設定） |
+| `DEBUG` | 1/true/path | `server.debug`/`server.debug_file` | `1|true` enables debug, `<path>` mirrors to file |
+| `MODEL_ANSWER` | string | `model_profiles.answer.model` | Quick override (permanent settings should use YAML) |
 | `ANSWER_EFFORT` | enum | `model_profiles.answer.reasoning_effort` | `low`/`medium`/`high` |
 | `ANSWER_VERBOSITY` | enum | `model_profiles.answer.verbosity` | `low`/`medium`/`high` |
 
 > When `openai.api_key_env` is changed to `MY_KEY`, set **`MY_KEY`**. `OPENAI_API_KEY` will not be read.
 
-補足（デバッグ有効化の単一判定）
-- デバッグは CLI / ENV / YAML を同義とし、優先度は **CLI > ENV > YAML**。
-- アプリ起動時に最終状態（enabled/file）を確定し、以降は共通判定（`isDebug()`）に従う。
+Note (Unified Debug Enablement Logic)
+- Debug treats CLI / ENV / YAML as equivalent, with priority **CLI > ENV > YAML**.
+- The final state (enabled/file) is determined at application startup, and thereafter follows common judgment (`isDebug()`).
 - Even when only `server.debug: true` is specified in YAML, debug logs are equally enabled in all modules.
 
 ---
 
-## 7. CLI オプション（設定関連）
+## 7. CLI Options (Configuration-related)
 
 ```text
 --show-config [--config <path>]
---config <path>     : YAML の明示パス（省略時は既定パス）
+--config <path>     : Explicit YAML path (default path when omitted)
 ```
 
-出力はstderrです。例：
+Output goes to stderr. Example:
 ```bash
 node build/index.js --show-config 2> effective-config.json
 ```
 
 ---
 
-## 8. 実効設定の確認（出力例）
+## 8. Verifying Effective Configuration (Output Example)
 
 ```json
 {
@@ -225,7 +225,7 @@ node build/index.js --show-config 2> effective-config.json
 
 ---
 
-## 9. 制約（バリデーションの目安）
+## 9. Constraints (Validation Guidelines)
 - `request.timeout_ms` > 0  
 - `request.max_retries` ∈ [0,10]  
 - `policy.max_citations` ∈ [1,10]  
@@ -238,15 +238,15 @@ Invalid values may not necessarily cause errors and may be applied as-is. We rec
 
 ---
 
-## 10. セキュリティ注意
+## 10. Security Notes
 - **API keys are not written to YAML**. Always obtained from ENV (variable pointed to by `openai.api_key_env`).
-- `base_url` を私設プロキシに向ける場合は、組織のセキュリティ方針に従ってください。
+- When pointing `base_url` to a private proxy, please follow your organization's security policies.
 
 ---
 
 <!-- Additional parameter considerations (undecided items) are moved to docs/_drafts/config-additional-params.md -->
 
-## 12. よくある質問（抜粋）
+## 12. Frequently Asked Questions (Excerpts)
 - **Q: Works without YAML?** → Yes. Works with just TS defaults and ENV/CLI.
 - **Q: Multiple domains?** → Passed as hints, influences model's search decisions (not forced filtering).
 - **Q: Why always allow web_search?** → Let model decide "execute when needed" to prevent missing **current events**.

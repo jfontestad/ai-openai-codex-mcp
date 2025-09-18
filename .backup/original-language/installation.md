@@ -48,20 +48,20 @@ openai-responses-mcp/
 
 ---
 
-## 3. Dependencies Installation and Build
+## 3. 依存インストールとビルド
 ```bash
-# In project root directory
+# プロジェクト直下
 npm ci
 npm run build
 ```
 
 - On success, `build/index.js` is generated.
-- After this, CLI can be launched with `node build/index.js` or `npx openai-responses-mcp` (when installed as npm package).
+- 以降、CLI は `node build/index.js` または `npx openai-responses-mcp`（npm パッケージとして導入時）で起動可能。
 
 ---
 
-## 4. API Key Configuration (Required)
-- By default, it references **`OPENAI_API_KEY`** (see `docs/reference/config-reference.md`).
+## 4. API キーの設定（必須）
+- 既定では **`OPENAI_API_KEY`** を参照します（`docs/reference/config-reference.md` 参照）。
 - Configuration method varies by shell. Examples:
 
 **bash/zsh (macOS/Linux)**
@@ -74,18 +74,18 @@ export OPENAI_API_KEY="sk-..."
 $env:OPENAI_API_KEY="sk-..."
 ```
 
-> If you changed `openai.api_key_env` in YAML, set it with that ENV name.
+> `openai.api_key_env` を YAML で変更した場合は、その ENV 名で設定してください。
 
 ---
 
-## 5. Configuration File (Optional)
-YAML is **optional**. It works without it (TS defaults + ENV/CLI).
+## 5. 設定ファイル（任意）
+YAML は**任意**です。無くても動作します（TS 既定 + ENV/CLI）。
 
-### 5.1 Placement Location
-- Default:
-  - macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`
+### 5.1 配置場所
+- 既定:  
+  - macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`  
   - Windows: `%APPDATA%\openai-responses-mcp\config.yaml`
-- Explicit: `--config /abs/path/config.yaml`
+- 明示: `--config /abs/path/config.yaml`
 
 ### 5.2 サンプル
 ```yaml
@@ -100,13 +100,13 @@ request:
   max_retries: 3
 ```
 
-> Arrays are **replaced**, objects are **deep merged**. Priority is **CLI > ENV > YAML > TS**.
+> 配列は**置換**、オブジェクトは**深いマージ**。優先順位は **CLI > ENV > YAML > TS**。
 
 ---
 
-## 6. Basic Commands
+## 6. 基本コマンド
 ```bash
-# Version/help
+# バージョン/ヘルプ
 node build/index.js --version
 node build/index.js --help
 
@@ -116,7 +116,7 @@ npx openai-responses-mcp --show-config --config ./config/config.yaml 2> effectiv
 MODEL_ANSWER=gpt-5 npx openai-responses-mcp --show-config 2> effective.json
 ```
 
-Expected example (excerpt):
+期待例（抜粋）:
 ```json
 {
   "version": "0.4.0",
@@ -132,7 +132,7 @@ Expected example (excerpt):
 ### 7.1 Local (Under project or tgz pseudo-installation)
 If you run `npm i` or `npm i <tgz>` immediately, it will be placed in the current `node_modules`.
 
-Example (continuation of tgz pseudo-installation procedure):
+例（tgz 擬似インストール手順の続き）:
 ```
 echo "$TMP"
 ls -la "$TMP/node_modules/openai-responses-mcp"
@@ -140,34 +140,34 @@ ls -la "$TMP/node_modules/.bin"
 "$TMP/node_modules/.bin/openai-responses-mcp" --show-config 2> effective.json
 ```
 
-### 7.2 Global Installation (Optional)
-Running `npm i -g openai-responses-mcp` will place it in the global bin directory. Usually `npx` is sufficient.
+### 7.2 グローバル導入時（任意）
+`npm i -g openai-responses-mcp` を実行すると、グローバルの bin ディレクトリに配置されます。通常は `npx` で十分です。
 
 ```
 npm bin -g
 which openai-responses-mcp
 ```
 
-### 7.3 npx Execution (Cache)
-`npx openai-responses-mcp@latest` is temporarily downloaded to npm cache and executed (path depends on internal implementation).
-The operation flow can be confirmed with verbose mode.
+### 7.3 npx 実行時（キャッシュ）
+`npx openai-responses-mcp@latest` は npm のキャッシュ配下に一時取得されて実行されます（パスは内部実装に依存）。
+動作の流れは verbose で確認できます。
 
 ```
 npx -y openai-responses-mcp@latest --version --loglevel=verbose
-npm config get cache   # Cache directory location
+npm config get cache   # キャッシュディレクトリの場所
 ```
 
 > Note: `npx` cache location varies by environment and npm version. For permanent location fixing, install locally (project) or globally.
 
 ---
 
-## 7. Unit Smoke Test (MCP Protocol)
+## 7. 単体スモーク（MCP プロトコル）
 ```bash
-# LDJSON (no API key required)
+# LDJSON（API鍵不要）
 npm run mcp:smoke:ldjson | tee /tmp/mcp-smoke-ldjson.out
 grep -c '"jsonrpc":"2.0"' /tmp/mcp-smoke-ldjson.out
 
-# Content-Length (requires OPENAI_API_KEY)
+# Content-Length（要 OPENAI_API_KEY）
 export OPENAI_API_KEY="sk-..."
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 grep -c '^Content-Length:' /tmp/mcp-smoke.out
@@ -175,18 +175,18 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out
 
 ---
 
-## 8. MCP Protocol Smoke Test
+## 8. MCP プロトコルのスモークテスト
 ```bash
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
-grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 or more
+grep -c '^Content-Length:' /tmp/mcp-smoke.out   # 3 以上
 ```
 If you can confirm 3 responses of `initialize → tools/list → tools/call(answer)`, the stdio layer is healthy.
 
 ---
 
-## 9. Claude Registration (Overview)
-- Register in Claude's configuration file under `mcpServers` (**details in** `client-setup-claude.md`).
-- Example:
+## 9. Claude 側への登録（概要）
+- Claude の設定ファイルで `mcpServers` に登録します（**詳細は** `client-setup-claude.md`）。
+- 例：
 ```json
 {
   "mcpServers": {
@@ -205,10 +205,10 @@ If you can confirm 3 responses of `initialize → tools/list → tools/call(answ
 Generate package in repository root and verify `npx` execution by installing from **separate directory**.
 
 ```bash
-# Package generation
+# パッケージ生成
 npm pack
 
-# Verification in temporary directory
+# 一時ディレクトリで検証
 TMP=$(mktemp -d); pushd "$TMP" >/dev/null
 npm init -y >/dev/null
 npm i "$OLDPWD"/openai-responses-mcp-*.tgz >/dev/null
@@ -221,23 +221,23 @@ popd >/dev/null
 
 ---
 
-## 11. Uninstall / Cleanup
+## 11. アンインストール / クリーンアップ
 - Remove local dependencies: `rm -rf node_modules/` (Windows: `rd /s /q node_modules`)
-- Remove build artifacts: `rm -rf build/`
-- Remove npm global installation (optional): `npm uninstall -g openai-responses-mcp`
+- ビルド生成物の削除: `rm -rf build/`
+- npm グローバル導入の削除（任意）: `npm uninstall -g openai-responses-mcp`
 
 ---
 
-## 12. Troubleshooting
-- **Missing API key**: `OPENAI_API_KEY` not set. Review ENV settings.
-- **Cannot find module build/index.js**: `npm run build` not executed or failed.
+## 12. トラブルシュート
+- **Missing API key**: `OPENAI_API_KEY` 未設定。ENV を見直す。
+- **Cannot find module build/index.js**: `npm run build` 未実行または失敗。
 - **Content-Length error**: Binary/line break contamination. Rebuild and run `npm run mcp:smoke`.
 - **429/5xx frequent**: Increase retry limit (`RETRIES`). Adjust `TIMEOUT`.
-- **Model not supported**: Revert `MODEL_ANSWER` to stable version.
+- **モデル未対応**: `MODEL_ANSWER` を安定版へ戻す。
 
 ---
 
-## 13. Security Notes
-- Pass API keys **via ENV only**. Storing in plain text in YAML/JSON is prohibited.
+## 13. セキュリティ注意
+- API キーは **ENV でのみ**渡す。YAML/JSON の平文保存は禁止。
 - Don't leave secrets in logs. Limit to minimal metadata (model name, retry count, latency).
-- On shared terminals, `unset OPENAI_API_KEY` after work (PowerShell: `$env:OPENAI_API_KEY=$null`).
+- 共有端末では、作業後に `unset OPENAI_API_KEY`（PowerShell は `$env:OPENAI_API_KEY=$null`）。

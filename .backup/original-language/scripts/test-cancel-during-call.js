@@ -36,9 +36,9 @@ child.stdin.write(enc({ jsonrpc:'2.0', id:1, method:'initialize', params:{ proto
 
 // 2) tools/call (id=3)
 setTimeout(() => {
-  const args = { name:'answer', arguments:{ query:'Please provide a comprehensive summary of the latest large language model comparison and evaluation methods. Include references and dates.' } };
+  const args = { name:'answer', arguments:{ query:'最新の大規模言語モデルの比較と評価手法を包括的に要約してください。参考文献と日付を含めてください。' } };
   child.stdin.write(enc({ jsonrpc:'2.0', id:3, method:'tools/call', params: args }));
-  // Send cancellation notification immediately after
+  // 直後にキャンセル通知
   setTimeout(() => {
     child.stdin.write(enc({ jsonrpc:'2.0', method:'notifications/cancelled', params:{ requestId: 3, reason:'user-request' } }));
   }, 40);
