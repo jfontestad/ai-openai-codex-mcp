@@ -86,9 +86,9 @@ Content-Length: 28
 
 ### 1.7 実装注意点
 - **Content-Length は UTF-8 バイト長**で算出（`Buffer.byteLength(json, 'utf8')`）。
-- ストリームは**フラッシュ**されるまでクライアントに届かない。`stdout.write` 直後に `\n` は不要、ヘッダ末尾の `\r\n\r\n` を忘れない。
-- **バックプレッシャ**：Node.js の `stdout.write()` が `false` を返す場合は `drain` 待機。
-- **最大メッセージ長**：制限なしだが、実務では 1～2MB 程度で分割を検討。
+- Streams are not delivered to client until **flushed**. No need for `\n` immediately after `stdout.write`, but don't forget the `\r\n\r\n` at the end of headers.
+- **Backpressure**: When Node.js `stdout.write()` returns `false`, wait for `drain`.
+- **Maximum message length**: No limit, but consider splitting at 1-2MB in practice.
 - **並列リクエスト**：ID をキーに同時進行可。順不同応答を許容すること。
 
 ### 1.8 ロギング & トラブルシュート
@@ -107,4 +107,4 @@ Content-Length: 28
 ---
 
 ## 4. 試験（Transport-level）
-- **stdio**：`scripts/mcp-smoke.js` が最小試験。`initialize`→`tools/list`→`tools/call` の成功を確認。
+- **stdio**: `scripts/mcp-smoke.js` provides minimal testing. Confirms success of `initialize`→`tools/list`→`tools/call`.

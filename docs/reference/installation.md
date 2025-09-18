@@ -55,14 +55,14 @@ npm ci
 npm run build
 ```
 
-- 成功すると `build/index.js` が生成されます。
+- On success, `build/index.js` is generated.
 - 以降、CLI は `node build/index.js` または `npx openai-responses-mcp`（npm パッケージとして導入時）で起動可能。
 
 ---
 
 ## 4. API キーの設定（必須）
 - 既定では **`OPENAI_API_KEY`** を参照します（`docs/reference/config-reference.md` 参照）。
-- シェル毎に設定方法が異なります。代表例：
+- Configuration method varies by shell. Examples:
 
 **bash/zsh (macOS/Linux)**
 ```bash
@@ -110,7 +110,7 @@ request:
 node build/index.js --version
 node build/index.js --help
 
-# 実効設定の確認（sources に反映元が出る）
+# Check effective configuration (sources show where settings come from)
 npx openai-responses-mcp --show-config 2> effective.json
 npx openai-responses-mcp --show-config --config ./config/config.yaml 2> effective.json
 MODEL_ANSWER=gpt-5 npx openai-responses-mcp --show-config 2> effective.json
@@ -127,9 +127,9 @@ MODEL_ANSWER=gpt-5 npx openai-responses-mcp --show-config 2> effective.json
 
 ---
 
-## 7. インストール先の確認（ローカル/グローバル/npx）
+## 7. Verify Installation Location (Local/Global/npx)
 
-### 7.1 ローカル（プロジェクト配下 or tgz 擬似インストール時）
+### 7.1 Local (Under project or tgz pseudo-installation)
 `npm i` や `npm i <tgz>` を実行した直後であれば、カレントの `node_modules` に配置されます。
 
 例（tgz 擬似インストール手順の続き）:

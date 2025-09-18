@@ -49,21 +49,21 @@ npm run mcp:smoke:ping | tee /tmp/mcp-smoke-ping.out
 # ping result should return empty object
 grep -c '"result":{}' /tmp/mcp-smoke-ping.out
 ```
-**期待**: `initialize` 応答の後に `{"jsonrpc":"2.0","id":<n>,"result":{}}` が出力される。
+**Expected**: After `initialize` response, `{"jsonrpc":"2.0","id":<n>,"result":{}}` should be output.
 
 ### 2-2 追加: protocol/capabilities の目視確認
-- `protocolVersion` が `2025-06-18` であること
-- `initialize` 応答の `capabilities` は `{"tools":{}}` のみ（`roots` は含まれない）
+- `protocolVersion` should be `2025-06-18`
+- `initialize` response `capabilities` should be `{"tools":{}}` only (`roots` not included)
 
 ---
 
 ## 3. MCP stdio スモーク（Content-Length, 要 OPENAI_API_KEY）
-OpenAI API を実際に呼ぶ最小疎通。`scripts/mcp-smoke.js` は `tools/call(answer)` を送るため鍵が必要です。
+Minimal connectivity that actually calls OpenAI API. `scripts/mcp-smoke.js` sends `tools/call(answer)` so key is required.
 ```bash
 export OPENAI_API_KEY="sk-..."
 npm run mcp:smoke | tee /tmp/mcp-smoke.out
 
-# initialize → tools/list → tools/call の3応答が Content-Length 付きで流れること
+# Verify that 3 responses (initialize → tools/list → tools/call) flow with Content-Length
 grep -c '^Content-Length:' /tmp/mcp-smoke.out
 ```
 

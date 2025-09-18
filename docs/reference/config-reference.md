@@ -162,11 +162,11 @@ server:
 
 ## 6. 環境変数（ENV）
 
-> ここに列挙される ENV がセットされている場合、**YAML より優先**されます。
+> The ENV variables listed here take **priority over YAML** when set.
 
 | ENV 名 | 型/範囲 | 反映先 | 説明 |
 |---|---|---|---|
-| `OPENAI_API_KEY` | string | OpenAI 認証 | **必須**。`openai.api_key_env` が指す ENV 名（変更可能）。 |
+| `OPENAI_API_KEY` | string | OpenAI authentication | **Required**. ENV name pointed to by `openai.api_key_env` (configurable). |
 | `OPENAI_API_TIMEOUT` | number(ms) | `request.timeout_ms` | >0 |
 | `OPENAI_MAX_RETRIES` | integer | `request.max_retries` | 0..10 |
 | `SEARCH_MAX_RESULTS` | integer | `search.defaults.max_results` | 1..10 |
@@ -177,12 +177,12 @@ server:
 | `ANSWER_EFFORT` | enum | `model_profiles.answer.reasoning_effort` | `low`/`medium`/`high` |
 | `ANSWER_VERBOSITY` | enum | `model_profiles.answer.verbosity` | `low`/`medium`/`high` |
 
-> `openai.api_key_env` を `MY_KEY` に変えた場合、**`MY_KEY`** を設定してください。`OPENAI_API_KEY` は見られません。
+> When `openai.api_key_env` is changed to `MY_KEY`, set **`MY_KEY`**. `OPENAI_API_KEY` will not be read.
 
 補足（デバッグ有効化の単一判定）
 - デバッグは CLI / ENV / YAML を同義とし、優先度は **CLI > ENV > YAML**。
 - アプリ起動時に最終状態（enabled/file）を確定し、以降は共通判定（`isDebug()`）に従う。
-- YAML のみで `server.debug: true` が指定された場合でも、すべてのモジュールで等しくデバッグログが有効になる。
+- Even when only `server.debug: true` is specified in YAML, debug logs are equally enabled in all modules.
 
 ---
 
@@ -234,7 +234,7 @@ node build/index.js --show-config 2> effective-config.json
 - `search.defaults.recency_days` ≥ 0  
   
 
-不正な値はエラーとは限らず、そのまま適用される場合があります。CI で `--show-config` の JSON（stderr）を検査することを推奨します。
+Invalid values may not necessarily cause errors and may be applied as-is. We recommend inspecting the JSON (stderr) from `--show-config` in CI.
 
 ---
 

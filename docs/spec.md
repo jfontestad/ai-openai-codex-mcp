@@ -365,22 +365,22 @@ server: { transport: stdio, debug: false, debug_file: null, show_config_on_start
   - Check `signal.aborted` before retry, and immediately interrupt on cancellation (no retries).
 
 - トランスポート注意
-  - 物理的な切断（disconnection）はキャンセルを意味しない。キャンセル意図がある場合、クライアントは必ず `notifications/cancelled` を送ること。
+  - Physical disconnection does not imply cancellation. When cancellation is intended, client must always send `notifications/cancelled`.
 
 - ログ（DEBUG 時）
-  - `cancelled requestId=<id> reason=<...>` を最小限で記録（本文・秘密情報は出さない）。
+  - Record `cancelled requestId=<id> reason=<...>` minimally (no main content or secret information).
 
 ---
 
 ## 7. Retry Strategy
-- リトライ対象：HTTP 429 / 5xx / Abort（タイムアウト）
+- Retry targets: HTTP 429 / 5xx / Abort (timeout)
 - 戦略：指数バックオフ（実装裁量、合計 `request.max_retries` 回まで）
-- 失敗時の処理：エラーとして `tools/call` に返す（`code:-32050` など実装定義）。
+- Failure handling: Return as error to `tools/call` (`code:-32050` etc., implementation-defined).
 
 ---
 
 ## 8. Security / Logging
-- API キーは**ENV からのみ**読み、YAML/JSON へ書かない。
+- API keys are read **from ENV only**, not written to YAML/JSON.
 - ログに**回答本文やキーをフルで残さない**。必要最小のメタ情報（モデル名/レイテンシ/再試行回数）に限定。
 - プロキシ・私設ゲートウェイ利用は組織方針に従う。
 
