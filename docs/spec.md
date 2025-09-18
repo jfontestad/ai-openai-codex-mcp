@@ -451,111 +451,15 @@ This server honors MCP cancellation notifications.
 
 <!-- Future extensions (design only): Removed from public version due to undecided items -->
 
-## 15. npm Distribution Metadata (package.json Publication Spec)
-This section defines required and recommended `package.json` fields for npm publication. Verify compliance with this spec before releasing.
+## 14. Versioning / Changelog / Lockfile Policy
 
-### 15.1 Required Fields
-- name: `openai-responses-mcp`
-- version: Semantic Versioning (current `0.4.x`)
-- description: Use the following text (don't include stage expressions like "Step N:")
-  - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
-- type: `module`
-- bin: `{ "openai-responses-mcp": "build/index.js" }`
-- files: `["build","config/config.yaml.example","config/policy.md.example","README.md","LICENSE"]`
-- scripts.prepublishOnly: `npm run build`
-- engines.node: `>=20`
-- license: `MIT`
-
-### 15.2 Recommended Metadata (npm Page Usability Enhancement)
-- repository: `{ "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" }`
-- homepage: `https://github.com/uchimanajet7/openai-responses-mcp#readme`
-- bugs: `{ "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }`
-- keywords: Supply relevant terms (for example `"mcp","openai","responses","cli"`)
-- author: Provide appropriate attribution
-
-### 15.3 Example `package.json` for Publication (Excerpt)
-```json
-{
-  "name": "openai-responses-mcp",
-  "version": "0.4.1",
-  "description": "Lightweight MCP server (Responses API core). OpenAI integration + web_search.",
-  "type": "module",
-  "bin": { "openai-responses-mcp": "build/index.js" },
-  "files": [
-    "build",
-    "config/config.yaml.example",
-    "config/policy.md.example",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": { "prepublishOnly": "npm run build" },
-  "engines": { "node": ">=20" },
-  "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" },
-  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme",
-  "bugs": { "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }
-}
-```
-
-### 15.4 Application and Verification Flow
-1) Identify differences from spec (confirm no "Step N:" remains in `description`).
-2) Ensure `repository`, `homepage`, and `bugs` fields match the URLs defined in this spec.
-3) Verify included items and metadata with `npm run build:clean && npm pack --dry-run`.
-4) Document reasons and impact in `docs/changelog.md` so users can track changes.
-
-Note: This spec defines minimum requirements for public metadata; dependency and script details follow higher sections (functional spec).
-
----
-
-## Appendix A. `answer` I/O Example
-### A.1 Input (tools/call -> arguments)
-```json
-{
-  "query": "Today's Tokyo weather on 2025-08-09?",
-  "recency_days": 60,
-  "max_results": 5,
-  "domains": ["jma.go.jp","tenki.jp"],
-  "style": "summary",
-  "verbosity": "medium",
-  "reasoning_effort": "minimal"
-}
-```
-
-### A.2 Output (tools/call <- content[0].text)
-```json
-{
-  "answer": "The Tokyo weather on 2025-08-09 (JST) is ...\n\nSources:\n- https://www.jma.go.jp/... (2025-08-09)",
-  "used_search": true,
-  "citations": [{"url":"https://www.jma.go.jp/...","title":"Japan Meteorological Agency Forecast","published_at":"2025-08-09"}],
-  "model": "gpt-5"
-}
-```
-
----
-
-## Appendix B. Error Examples (Implementation Guidance)
-- Invalid input:
-  ```json
-  {"code":-32001,"message":"answer: invalid arguments","data":{"reason":"query is required"}}
-  ```
-- Missing profile configuration:
-  ```json
-  {"code":-32052,"message":"model_profiles.answer is required"}
-  ```
-- API error (429/5xx) after all retries fail:
-  ```json
-  {"code":-32050,"message":"openai responses failed","data":{"retries":3}}
-  ```
-
-## 16. Versioning / Changelog / Lockfile Policy
-
-### 16.1 Versioning (SemVer / SSOT)
+### 14.1 Versioning (SemVer / SSOT)
 - The **single source of truth** for the version is `package.json` `version`.
 - Breaking change = MAJOR, backward-compatible feature = MINOR, fix = PATCH.
 - **Do not manually edit** `package-lock.json` versions; `npm install` reconciles them.
 - Ensure the runtime satisfies `engines.node: "\>=20"`.
 
-### 16.2 Changelog (Keep a Changelog Alignment)
+### 14.2 Changelog (Keep a Changelog Alignment)
 - Location: `docs/changelog.md`.
 - Format follows Keep a Changelog ordering (`Unreleased` -> released versions, newest first).
 - Timezone: Asia/Tokyo.
@@ -563,7 +467,7 @@ Note: This spec defines minimum requirements for public metadata; dependency and
 - Pre-release (< v1.0.0): retain items under `Unreleased`, then convert to `vX.Y.Z - YYYY-MM-DD` when shipping.
 - When confirming a release: move relevant entries from `Unreleased` into the dated section.
 
-### 16.3 Lockfile Operations (npm lockfile v3)
+### 14.3 Lockfile Operations (npm lockfile v3)
 - Always commit `package-lock.json` for reproducibility.
 - Regenerate the lock from `package.json`; never hand-edit the lockfile.
 - Preferred flows (most reproducible first):
@@ -589,16 +493,16 @@ Note: This spec defines minimum requirements for public metadata; dependency and
 
 ---
 
-## 11. CI/CD Specification (GitHub Actions)
+## 15. CI/CD Specification (GitHub Actions)
 This section summarizes the operational rules captured in docs/release.md (phases B/C). Implementations must follow them exactly.
 
-### 11.1 Branch/Tag Operations
+### 15.1 Branch/Tag Operations
 - `main`: release branch.
 - `feature/*`: feature branches prepared for PRs.
 - Tags: use `vX.Y.Z` (SemVer) as the release trigger.
   - Decide the version manually, then `git tag vX.Y.Z` followed by `git push --tags`.
 
-### 11.2 Workflow Structure
+### 15.2 Workflow Structure
 - `ci.yml` (PR/push verification)
   - Triggers: `pull_request` (all branches) and `push` (`main`).
   - Node: `20.x` (actions/setup-node@v4).
@@ -621,11 +525,11 @@ This section summarizes the operational rules captured in docs/release.md (phase
     - GitHub Actions executes `npm publish --provenance --access public` (no token needed).
   - Optional: generate GitHub Release notes.
 
-### 11.3 Secrets / Environment Variables
+### 15.3 Secrets / Environment Variables
 - `OPENAI_API_KEY` (optional in ci.yml): required for `npm run mcp:smoke`; omit to run only `mcp:smoke:ldjson`.
 - Trusted Publishing does not require `NPM_TOKEN`; configure npm once.
 
-### 11.4 Reference YAML (Outline)
+### 15.4 Reference YAML (Outline)
 The snippets below illustrate the expected workflows. Mirror them without introducing additional steps.
 
 ci.yml (outline):
@@ -678,15 +582,115 @@ jobs:
       - run: npm publish --provenance --access public
 ```
 
-### 11.5 Published Artifacts and Policy
+### 15.5 Published Artifacts and Policy
 - Publish only the minimal set listed in `package.json.files` (`build/`, `config/*.example`, `README.md`, `LICENSE`, `package.json`).
 - Keep `prepublishOnly` as `npm run build` (local publish behaves the same).
 - After release, verify with `npx openai-responses-mcp@latest --stdio`.
 
-### 11.6 Operational Flow (Confirmed)
+### 15.6 Operational Flow (Confirmed)
 1) feature/* -> Pull Request (runs `ci.yml`).
 2) Merge into `main`, bump `package.json` via SemVer.
 3) `git tag vX.Y.Z && git push --tags` (runs `release.yml` -> npm publish via Trusted Publishing).
 4) Confirm the Actions run succeeded and re-run the README `npx` example.
 
 Note: Adding `repository`, `homepage`, and `bugs` fields to `package.json` improves the npm page, but coordinate separately before implementing.
+
+---
+
+## 16. npm Distribution Metadata (package.json Publication Spec)
+This section defines required and recommended `package.json` fields for npm publication. Verify compliance with this spec before releasing.
+
+### 16.1 Required Fields
+- name: `openai-responses-mcp`
+- version: Semantic Versioning (current `0.4.x`)
+- description: Use the following text (don't include stage expressions like "Step N:")
+  - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
+- type: `module`
+- bin: `{ "openai-responses-mcp": "build/index.js" }`
+- files: `["build","config/config.yaml.example","config/policy.md.example","README.md","LICENSE"]`
+- scripts.prepublishOnly: `npm run build`
+- engines.node: `>=20`
+- license: `MIT`
+
+### 16.2 Recommended Metadata (npm Page Usability Enhancement)
+- repository: `{ "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" }`
+- homepage: `https://github.com/uchimanajet7/openai-responses-mcp#readme`
+- bugs: `{ "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }`
+- keywords: Supply relevant terms (for example `"mcp","openai","responses","cli"`)
+- author: Provide appropriate attribution
+
+### 16.3 Example `package.json` for Publication (Excerpt)
+```json
+{
+  "name": "openai-responses-mcp",
+  "version": "0.4.1",
+  "description": "Lightweight MCP server (Responses API core). OpenAI integration + web_search.",
+  "type": "module",
+  "bin": { "openai-responses-mcp": "build/index.js" },
+  "files": [
+    "build",
+    "config/config.yaml.example",
+    "config/policy.md.example",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": { "prepublishOnly": "npm run build" },
+  "engines": { "node": ">=20" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" },
+  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme",
+  "bugs": { "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }
+}
+```
+
+### 16.4 Application and Verification Flow
+1) Identify differences from spec (confirm no "Step N:" remains in `description`).
+2) Ensure `repository`, `homepage`, and `bugs` fields match the URLs defined in this spec.
+3) Verify included items and metadata with `npm run build:clean && npm pack --dry-run`.
+4) Document reasons and impact in `docs/changelog.md` so users can track changes.
+
+Note: This spec defines minimum requirements for public metadata; dependency and script details follow higher sections (functional spec).
+
+---
+
+## Appendix A. `answer` I/O Example
+### A.1 Input (tools/call -> arguments)
+```json
+{
+  "query": "Today's Tokyo weather on 2025-08-09?",
+  "recency_days": 60,
+  "max_results": 5,
+  "domains": ["jma.go.jp","tenki.jp"],
+  "style": "summary",
+  "verbosity": "medium",
+  "reasoning_effort": "minimal"
+}
+```
+
+### A.2 Output (tools/call <- content[0].text)
+```json
+{
+  "answer": "The Tokyo weather on 2025-08-09 (JST) is ...\n\nSources:\n- https://www.jma.go.jp/... (2025-08-09)",
+  "used_search": true,
+  "citations": [{"url":"https://www.jma.go.jp/...","title":"Japan Meteorological Agency Forecast","published_at":"2025-08-09"}],
+  "model": "gpt-5"
+}
+```
+
+---
+
+## Appendix B. Error Examples (Implementation Guidance)
+- Invalid input:
+  ```json
+  {"code":-32001,"message":"answer: invalid arguments","data":{"reason":"query is required"}}
+  ```
+- Missing profile configuration:
+  ```json
+  {"code":-32052,"message":"model_profiles.answer is required"}
+  ```
+- API error (429/5xx) after all retries fail:
+  ```json
+  {"code":-32050,"message":"openai responses failed","data":{"retries":3}}
+  ```
+
+
