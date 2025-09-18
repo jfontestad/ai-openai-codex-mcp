@@ -130,7 +130,7 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
 
 export const answerToolDef = {
   name: "answer",
-  description: "Search the web when needed and return answers with evidence and citations",
+  description: "必要に応じてWeb検索を実行し、根拠（出典付き）で回答を返す",
   inputSchema: {
     type: "object",
     properties: {

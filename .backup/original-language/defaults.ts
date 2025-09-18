@@ -2,7 +2,7 @@ export type Transport = "stdio";
 
 export interface ModelProfile {
   model: string;
-  // OpenAI official: only low | medium | high (minimal is not supported)
+  // OpenAI 公式: low | medium | high のみ（minimal は未サポート）
   reasoning_effort: "low" | "medium" | "high";
   verbosity: "low" | "medium" | "high";
 }
@@ -23,9 +23,9 @@ export interface Config {
     max_citations: number;
     require_dates_iso: boolean;
     system?: {
-      source: "builtin" | "file"; // External policy.md loading control (specified only in YAML)
-      path?: string;               // Path to policy.md (tilde expansion supported)
-      merge?: "replace" | "prepend" | "append"; // Merging method with built-in SSOT
+      source: "builtin" | "file"; // 外部policy.mdの読込制御（YAMLのみで指定）
+      path?: string;               // policy.md のパス（~ 展開可）
+      merge?: "replace" | "prepend" | "append"; // 内蔵SSOTとの合成方法
     };
   };
   search: { defaults: { recency_days: number; max_results: number; domains: string[] } };

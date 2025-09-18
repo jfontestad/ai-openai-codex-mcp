@@ -51,13 +51,13 @@ grep -c '"result":{}' /tmp/mcp-smoke-ping.out
 ```
 **Expected**: After `initialize` response, `{"jsonrpc":"2.0","id":<n>,"result":{}}` should be output.
 
-### 2-2 追加: protocol/capabilities の目視確認
+### 2-2 Additional: Visual Confirmation of protocol/capabilities
 - `protocolVersion` should be `2025-06-18`
 - `initialize` response `capabilities` should be `{"tools":{}}` only (`roots` not included)
 
 ---
 
-## 3. MCP stdio スモーク（Content-Length, 要 OPENAI_API_KEY）
+## 3. MCP stdio Smoke Test (Content-Length, requires OPENAI_API_KEY)
 Minimal connectivity that actually calls OpenAI API. `scripts/mcp-smoke.js` sends `tools/call(answer)` so key is required.
 ```bash
 export OPENAI_API_KEY="sk-..."
@@ -69,14 +69,14 @@ grep -c '^Content-Length:' /tmp/mcp-smoke.out
 
 ---
 
-## 4. 優先順位の検証（ENV > YAML > TS）
-### 4-1 ENV 上書き
+## 4. Priority Verification (ENV > YAML > TS)
+### 4-1 ENV Override
 ```bash
 MODEL_ANSWER="gpt-5-mini" node build/index.js --show-config 2> effective.json; cat effective.json | jq '.effective.model_profiles.answer.model'
 ```
-**期待**: `"gpt-5-mini"`
+**Expected**: `"gpt-5-mini"`
 
-### 4-2 YAML の読み込み
+### 4-2 YAML Loading
 ```bash
 cat > /tmp/mcp-config.yaml <<'YAML'
 model_profiles:
@@ -102,19 +102,19 @@ OPENAI_API_TIMEOUT=10 npm run mcp:smoke | sed -n '1,120p'
 
 ---
 
-## 6. 失敗時の切り分け
-- `Missing API key: set OPENAI_API_KEY` → 環境変数未設定
+## 6. Failure Troubleshooting
+- `Missing API key: set OPENAI_API_KEY` → Environment variable not set
 - `ECONNRESET` / `AbortError` → Network/timeout
-- `Unknown tool` → `tools/call` の name ミス（`answer` のみ対応）
+- `Unknown tool` → `tools/call` name error (only `answer` supported)
 
 ---
 
-## 7. 成功判定（DoD 準拠）
+## 7. Success Criteria (DoD Based)
 - If verifications 1, 2, and 4 show **expected results**, requirements are met.
 
 ---
 
-## 8. キャンセル（notifications/cancelled）の自動テスト
+## 8. Automatic Testing of Cancellation (notifications/cancelled)
 
 ### 8-1 Cancellation without inflight (No API key required, always run)
 ```bash
@@ -123,19 +123,19 @@ node scripts/test-cancel-noinflight.js
 ```
 **Expected**: `initialize` and `ping` responses succeed, test exits 0.
 
-### 8-2 実行中キャンセルの抑止（要 OPENAI_API_KEY・任意）
+### 8-2 Suppression of In-Flight Cancellation (requires OPENAI_API_KEY, optional)
 ```bash
 export OPENAI_API_KEY="sk-..."
 npm run build
 node scripts/test-cancel-during-call.js
 ```
-**期待**: キャンセル後に `id:3` の `result/error` は出ず、テストは `[test] OK: no response for id=3 after cancel` を表示して exit 0。
+**Expected**: After cancellation, no `result/error` for `id:3` appears, test displays `[test] OK: no response for id=3 after cancel` and exits 0.
 
-備考: GitHub Actions（`ci.yml`）では、APIキー未設定時は 8-2 を自動スキップする。
+Note: GitHub Actions (`ci.yml`) automatically skips 8-2 when API key is not set.
 
 ---
 
-## 9. tools/list のツール定義検証（API鍵不要・常時実行）
+## 9. Tool Definition Verification for tools/list (No API key required, always run)
 ```bash
 npm run build
 node scripts/test-tools-list.js

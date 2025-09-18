@@ -14,13 +14,13 @@ function encode(msg) {
 function start() {
   const child = spawn("node", ["build/index.js", "--stdio"], {
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, DEBUG: "1" } // DEBUG 有効化
+    env: { ...process.env, DEBUG: "1" } // DEBUG enabled
   });
 
   let buf = Buffer.alloc(0);
   child.stdout.on("data", (chunk) => {
     buf = Buffer.concat([buf, chunk]);
-    // Content-Length フレーミングの単純パーサ
+    // Simple Content-Length framing parser
     while (true) {
       const headerEnd = buf.indexOf(Buffer.from("\r\n\r\n"));
       if (headerEnd === -1) break;

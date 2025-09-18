@@ -93,11 +93,11 @@ export function startServer(cfg: Config) {
       // Use directly as profile name
       if (name && name in TOOL_DEFINITIONS) {
         try {
-          // Prepare AbortController for each request (interrupted by cancellation notification)
+          // リクエスト毎の AbortController を準備（キャンセル通知で中断）
           const entry = { controller: new AbortController(), cancelled: false };
           inflight.set(msg.id, entry);
-          const out = await callAnswer(args, cfg, name, entry.controller.signal);  // Profile name + cancel propagation
-          // Suppress response if cancelled
+          const out = await callAnswer(args, cfg, name, entry.controller.signal);  // プロファイル名 + キャンセル伝搬
+          // キャンセルされていれば応答抑止
           const cur = inflight.get(msg.id) || entry;
           const abortedNow = cur.cancelled || cur.controller.signal.aborted;
           if (abortedNow) {
@@ -162,11 +162,11 @@ export function startServer(cfg: Config) {
       return;
     }
 
-    // ping (health check) minimal implementation
+    // ping（ヘルスチェック）最小実装
     if (msg.method === "ping") {
       if (isDebug()) logInfo(`recv method=ping id=${String(msg?.id ?? '-')}`);
       if (msg.id !== undefined) {
-        // Empty object is OK (implementation-dependent according to spec).
+        // 空オブジェクトでOK（仕様上は実装依存）。
         sendResult(msg.id, {});
       }
       return;

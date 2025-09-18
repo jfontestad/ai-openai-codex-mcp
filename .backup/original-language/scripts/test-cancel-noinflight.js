@@ -17,9 +17,9 @@ let okPing = false;
 
 child.stdout.on('data', b => {
   const t = b.toString('utf8');
-  // Detect initialize response
+  // initialize 応答検出
   if (t.includes('"id":1') && t.includes('"result"')) okInitialize = true;
-  // Detect ping response
+  // ping 応答検出
   if (t.includes('"id":2') && t.includes('"result":{}')) okPing = true;
   process.stdout.write(b);
 });
@@ -34,7 +34,7 @@ setTimeout(() => {
   child.stdin.write(enc({ jsonrpc:'2.0', method:'notifications/cancelled', params:{ requestId: 999, reason: 'test-no-inflight' } }));
 }, 100);
 
-// ping should succeed as usual
+// ping は通常どおり成功すること
 setTimeout(() => {
   child.stdin.write(enc({ jsonrpc:'2.0', id:2, method:'ping' }));
 }, 200);

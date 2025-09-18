@@ -80,8 +80,8 @@ async function main() {
     env: process.env
   });
 
-  // --show-config の扱い：
-  // - 単独指定時: stderr にJSON出力し、0終了
+  // Handling of --show-config:
+  // - When used alone: Output JSON to stderr and exit with 0
   // - When used with --stdio: Output JSON to stderr and continue server (don't pollute stdout)
   let showConfigPrinted = false;
   if (args.showConfig) {
@@ -102,15 +102,15 @@ async function main() {
     }
   }
   if (args.stdio) {
-    // デバッグ有効化（優先度: CLI > ENV > YAML）
+    // Enable debug (priority: CLI > ENV > YAML)
     const yamlDbg = (loaded.effective.server as any)?.debug ? true : false;
     const yamlDbgFile = (loaded.effective.server as any)?.debug_file || null;
 
-    // 1) CLI を最優先で反映（仕様：CLI/ENV/YAML 同義）
+    // 1) Apply CLI with highest priority (specification: CLI/ENV/YAML are equivalent)
     if (args.debug) {
       loaded.effective.server.debug = true;
       if (args.debugPath) loaded.effective.server.debug_file = args.debugPath;
-      // ENV も同期（transport層のデバッグ判定で利用するため）
+      // Also synchronize ENV (used for debug determination in transport layer)
       process.env.DEBUG = args.debugPath ? args.debugPath : '1';
     }
 
@@ -121,17 +121,17 @@ async function main() {
       if (v !== '1' && v.toLowerCase() !== 'true') loaded.effective.server.debug_file = v;
     }
 
-    // 3) YAML（最後に不足分補完）
+    // 3) YAML (fill in missing parts at the end)
     if (!loaded.effective.server.debug && yamlDbg) loaded.effective.server.debug = true;
     if (!loaded.effective.server.debug_file && yamlDbgFile) loaded.effective.server.debug_file = yamlDbgFile;
 
     const dbgEnabled = !!loaded.effective.server.debug;
     const dbgFile = (loaded.effective.server as any).debug_file || null;
 
-    // 単一判定へ反映（以降は isDebug() を参照）
+    // Apply to single determination (hereafter refer to isDebug())
     setDebug(dbgEnabled, dbgFile);
 
-    // デバッグ時は起動情報をstderrに出す（GUIクライアントでの切り分け用）
+    // When debugging, output startup information to stderr (for troubleshooting with GUI clients)
     if (dbgEnabled) {
       logInfo(`starting stdio server pid=${process.pid}`);
       logInfo(`argv=${JSON.stringify(process.argv)}`);

@@ -1,12 +1,12 @@
-# 外部 System Policy サンプル（policy.md.example）
+# External System Policy Sample (policy.md.example)
 
-このファイルは、回答方針（System Prompt）を外部から差し替えるためのサンプルです。YAML 設定で参照します。
+This file is a sample for replacing response policies (System Prompt) from an external source. It is referenced by YAML configuration.
 
-推奨の使い方:
-- 既定のポリシー（内蔵）に、本免責や社内ルールを追記（append）
-- あるいは完全に置き換え（replace）
+Recommended usage:
+- Append disclaimers or internal rules to the default policy (built-in) using append
+- Or completely replace it using replace
 
-例（`~/.config/openai-responses-mcp/config.yaml`）:
+Example (`~/.config/openai-responses-mcp/config.yaml`):
 ```
 policy:
   system:
@@ -15,16 +15,16 @@ policy:
     merge: append   # replace | prepend | append
 ```
 
-ここから下は組織ごとに編集してください。
+Edit the content below according to your organization's needs.
 
 ---
 
-【免責】
-- 本ツールの回答は情報提供のみを目的としており、投資、医療、法律等の専門的助言を構成しません。必要に応じて専門家に相談してください。
+【Disclaimer】
+- The responses from this tool are provided for informational purposes only and do not constitute professional advice for investment, medical, legal, or other specialized matters. Please consult with professionals as needed.
 
-【出典・引用】
-- 可能な限り一次情報を優先し、URLと日付（YYYY-MM-DD）を明記してください。
+【Sources and Citations】
+- Prioritize primary sources whenever possible and clearly specify URLs and dates (YYYY-MM-DD).
 
-【表現・トーン】
-- 日本語の丁寧体を基本とし、簡潔でわかりやすい要約を優先してください。
+【Expression and Tone】
+- Use professional and polite language as the foundation, prioritizing concise and easy-to-understand summaries.
 

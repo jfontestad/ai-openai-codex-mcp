@@ -1,7 +1,7 @@
 # openai-responses-mcp
 
 <div align="center">
-  <p><a href="./README.md">Japanese</a></p>
+  <p><a href="./README.md">日本語</a></p>
 </div>
 
 A lightweight MCP server that uses the OpenAI Responses API as its inference core.  
@@ -179,7 +179,7 @@ node build/index.js --stdio --debug ./_debug.log
 
 ### 4) Demo (sample query to OpenAI)
 ```bash
-npm run mcp:quick -- "Today's temperature in Tokyo"
+npm run mcp:quick -- "今日の東京の気温"
 npm run mcp:smoke:ldjson   # NDJSON-compatible connectivity check
 ```
 

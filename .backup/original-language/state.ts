@@ -41,7 +41,7 @@ function installFileSink(path: string): void {
     process.on("exit", () => { try { stream.end(); } catch {} });
     sinkInstalled = true;
   } catch {
-    // Even if file sink fails, continue with screen output only
+    // ファイルシンクに失敗しても画面出力のみ継続
   }
 }
 

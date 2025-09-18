@@ -1,60 +1,60 @@
 # config/config.yaml.example
-# 本ファイルはサンプルです。実運用ではコピーして編集し、
-# 既定パス（macOS/Linux: ~/.config/openai-responses-mcp/config.yaml,
-# Windows: %APPDATA%\openai-responses-mcp\config.yaml）に配置するか、
-# CLI の --config で明示してください。
+# This file is a sample. In production, copy and edit it,
+# then place it at the default path (macOS/Linux: ~/.config/openai-responses-mcp/config.yaml,
+# Windows: %APPDATA%\openai-responses-mcp\config.yaml) or
+# specify it explicitly with CLI --config.
 #
-# 優先順位: CLI > ENV > YAML > TS defaults（配列は置換、オブジェクトは深いマージ）
+# Priority: CLI > ENV > YAML > TS defaults (arrays are replaced, objects are deep merged)
 
 openai:
-  # 認証に使う環境変数名。通常は OPENAI_API_KEY を使用し、YAML に鍵は書かない。
+  # Environment variable name for authentication. Typically use OPENAI_API_KEY and don't write keys in YAML.
   api_key_env: OPENAI_API_KEY
-  # OpenAI API のベース URL
+  # OpenAI API base URL
   base_url: https://api.openai.com/v1
 
 request:
-  # タイムアウト（ミリ秒）
+  # Timeout (milliseconds)
   timeout_ms: 300000
-  # 自動リトライ回数（429/5xx/AbortError）
+  # Automatic retry count (429/5xx/AbortError)
   max_retries: 3
 
-# マルチプロファイル設定
-# 用途に応じて3つのツールプロファイルを提供
+# Multi-profile configuration
+# Provides three tool profiles for different use cases
 model_profiles:
-  # 必須・基準プロファイル（未設定時は起動エラー）
+  # Required base profile (startup error if not configured)
   answer:
     model: gpt-5
     reasoning_effort: medium
     verbosity: medium
 
-  # オプション・詳細分析用（未設定時はanswerで代替）
+  # Optional detailed analysis profile (falls back to answer if not configured)
   answer_detailed:
     model: gpt-5
     reasoning_effort: high
     verbosity: high
 
-  # オプション・高速回答用（未設定時はanswerで代替）
+  # Optional quick response profile (falls back to answer if not configured)
   answer_quick:
     model: gpt-5-mini
     reasoning_effort: low
     verbosity: low
 
-# 最小設定例：answerのみ設定して全ツールを同じ設定で使用
+# Minimal configuration example: configure only answer to use same settings for all tools
 # model_profiles:
 #   answer:
 #     model: gpt-5
 #     reasoning_effort: medium
 #     verbosity: medium
-# # answer_detailed, answer_quick は省略 → answer の設定で動作
+# # answer_detailed, answer_quick are omitted → operates with answer settings
 
 policy:
-  # 迷ったら検索を優先するか（時事性取りこぼし防止）
+  # Whether to prioritize search when uncertain (prevents missing current events)
   prefer_search_when_unsure: true
-  # 出典の最大件数（1〜10 程度を推奨）
+  # Maximum number of citations (1-10 recommended)
   max_citations: 3
-  # 出典に ISO 日付（YYYY-MM-DD）併記を要求
+  # Require ISO date format (YYYY-MM-DD) in citations
   require_dates_iso: true
-  # System Policy の外部ファイルを使う場合は以下を有効化
+  # Enable the following to use external file for System Policy
   # system:
   #   source: file
   #   path: ~/.config/openai-responses-mcp/policy.md
@@ -62,22 +62,22 @@ policy:
 
 search:
   defaults:
-    # 記事の鮮度目安（日数）
+    # Article freshness guideline (days)
     recency_days: 60
-    # 取得件数ヒント（実際の使用はモデル判断）
+    # Results count hint (actual usage is model decision)
     max_results: 5
-    # 優先したいドメイン（空配列で制限なし）
+    # Preferred domains (empty array for no restrictions)
     domains: []
 
 server:
-  # トランスポート種別。現状は stdio のみ実装。
+  # Transport type. Currently only stdio is implemented.
   transport: stdio
-  # デバッグ（詳細ログ）: CLI/ENV/YAML は同義（優先度: CLI > ENV > YAML）
+  # Debug (detailed logging): CLI/ENV/YAML are equivalent (priority: CLI > ENV > YAML)
   # - CLI: --debug / --debug <path>
   # - ENV: DEBUG=1|true|<path>
-  # - YAML: server.debug: true（任意で server.debug_file: <path>）
+  # - YAML: server.debug: true (optionally server.debug_file: <path>)
   debug: false
-  # パス指定時は stderr をファイルへTEEミラー
+  # When path is specified, TEE mirror stderr to file
   debug_file: null
-  # 起動時にstderrへ実効設定の要約を表示
+  # Display summary of effective settings to stderr on startup
   show_config_on_start: false
