@@ -3,7 +3,7 @@ import { isDebug } from "../debug/state.js";
 
 export type JsonRpcMessage = { [k: string]: any };
 
-let lineDelimitedMode = false; // Claude compatibility: Enable for line-delimited JSON communication
+let lineDelimitedMode = false; // Claude互換: 行区切りJSONでやり取りする場合に有効化
 export function enableLineDelimitedMode() { lineDelimitedMode = true; }
 
 export function writeMessage(msg: JsonRpcMessage): void {
@@ -55,7 +55,7 @@ export function readMessages(onMessage: (msg: JsonRpcMessage) => void): void {
         if (alt !== -1) { headerEnd = alt; sepLen = 2; }
       }
       if (headerEnd === -1) {
-        // Fallback to allow plain JSON with LF delimiter when no framing header
+        // フレーミングヘッダが無い場合、LF区切りのプレーンJSONを許容するフォールバック
         const lf = buffer.indexOf("\n");
         if (lf !== -1) {
           const line = buffer.slice(0, lf).toString("utf8").trim();
@@ -71,7 +71,7 @@ export function readMessages(onMessage: (msg: JsonRpcMessage) => void): void {
           onMessage(msg);
           continue; // 次のメッセージへ
         } catch {
-              // If not line-unit JSON, wait for next data
+              // 行単位JSONでなければ、次のデータを待つ
             }
           }
         }

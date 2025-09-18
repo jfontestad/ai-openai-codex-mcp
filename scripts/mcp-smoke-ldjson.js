@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// 行区切りJSON（Content-Lengthなし）での最小疎通スモーク
-// initialize → tools/list を送信し、サーバの応答をそのまま標準出力に流す
+// Line-delimited JSON (no Content-Length) minimal connectivity smoke test
+// Send initialize → tools/list and stream server responses directly to stdout
 import { spawn } from "node:child_process";
 
 const child = spawn("node", ["build/index.js", "--stdio"], { stdio: "pipe" });
@@ -22,10 +22,10 @@ const init = {
 };
 const list = { jsonrpc: "2.0", id: 2, method: "tools/list", params: {} };
 
-// 行区切りJSONで送信（Content-Lengthを付けない）
+// Send as line-delimited JSON (without Content-Length)
 child.stdin.write(j(init) + "\n", "utf8");
 setTimeout(() => child.stdin.write(j(list) + "\n", "utf8"), 100);
 
-// 終了（短時間でkill）
+// Terminate (kill after short time)
 setTimeout(() => { try { child.kill(); } catch {} }, 1500);
 

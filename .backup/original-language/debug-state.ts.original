@@ -1,6 +1,6 @@
-// Module providing unified debug state determination
-// - Call setDebug() at startup to finalize state (enabled/file)
-// - Subsequently reference isDebug()/getDebugFile()
+// デバッグ状態の単一判定を提供するモジュール
+// - 起動時に setDebug() で最終状態（enabled/file）を確定
+// - 以降は isDebug()/getDebugFile() を参照
 
 import { createWriteStream, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";

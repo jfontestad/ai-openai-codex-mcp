@@ -1,40 +1,40 @@
 # Changelog
 
-本プロジェクトの変更履歴です。日付は Asia/Tokyo 基準です。
+Change history for this project. Dates are based on Asia/Tokyo.
 
 ## [0.6.0] - 2025-08-27
-- feat(logging): デバッグ判定を単一化。CLI/ENV/YAML を同義化し、優先度を CLI > ENV > YAML に統一（起動時に最終決定→以降は isDebug() を参照）。
-- refactor(logging): `src/debug/state.ts` を追加し、stderr→ファイルTEEミラーを含むデバッグ出力経路を一元化。
-- breaking(logging): `DEBUG_MCP` / `MCP_DEBUG` 環境変数のサポートを削除（今後は `DEBUG=1|true|<path>` のみ）。
-- docs: `docs/spec.md` / `docs/reference/*` / `README.*` を単一判定・同義化仕様へ更新。`server.log_level` の記述を削除。
-- config: `config/config.yaml.example` を `server.debug` / `server.debug_file` / `show_config_on_start` に更新。
-- chore(tests): `_temp_/_ai_/run-yaml-debug-test.js` を追加。スクリプトの `DEBUG_MCP` を `DEBUG` に統一。
+- feat(logging): Unified debug determination. Made CLI/ENV/YAML equivalent and standardized priority as CLI > ENV > YAML (final decision at startup → subsequent isDebug() reference).
+- refactor(logging): Added `src/debug/state.ts` to centralize debug output paths including stderr→file TEE mirroring.
+- breaking(logging): Removed support for `DEBUG_MCP` / `MCP_DEBUG` environment variables (only `DEBUG=1|true|<path>` going forward).
+- docs: Updated `docs/spec.md` / `docs/reference/*` / `README.*` to single determination/equivalence specification. Removed `server.log_level` description.
+- config: Updated `config/config.yaml.example` to `server.debug` / `server.debug_file` / `show_config_on_start`.
+- chore(tests): Added `_temp_/_ai_/run-yaml-debug-test.js`. Unified script `DEBUG_MCP` to `DEBUG`.
 
 ## [0.5.0] - 2025-08-24
-- feat(protocol): MCP キャンセルに対応（`notifications/cancelled`）。該当 `requestId` の処理を中断し、以後は `result/error` を送らない。未登録/完了済みは無視。
-- feat(runtime): OpenAI 呼び出しに `AbortSignal` を伝搬。キャンセル時はリトライを行わず即中断。
-- fix(server): キャンセル直後の例外でもエラー応答を抑止するよう実行順序と in-flight 管理を調整。
-- feat(tests/ci): `scripts/test-*.js` を追加（tools-list, cancel-noinflight, cancel-during-call）。CI に常時/条件テストを組み込み。
-- docs: `docs/spec.md` に「6.1 キャンセル」を追加、`docs/verification.md` に自動テスト手順を追記。
+- feat(protocol): Added MCP cancellation support (`notifications/cancelled`). Interrupts processing for the corresponding `requestId` and no longer sends `result/error` afterwards. Ignores unregistered/completed requests.
+- feat(runtime): Propagates `AbortSignal` to OpenAI calls. No retries on cancellation, immediate interruption.
+- fix(server): Adjusted execution order and in-flight management to suppress error responses even on exceptions immediately after cancellation.
+- feat(tests/ci): Added `scripts/test-*.js` (tools-list, cancel-noinflight, cancel-during-call). Incorporated continuous/conditional testing into CI.
+- docs: Added "6.1 Cancellation" to `docs/spec.md`, added automated test procedures to `docs/verification.md`.
 
 ## [0.4.8] - 2025-08-23
-- fix(protocol): `initialize` 応答から `capabilities.roots` を削除（未実装機能の広告を停止）。Claude Code からの `roots/list` 呼び出しによる切断を予防。
-- feat(protocol): `ping` を最小実装（ヘルスチェック用、空オブジェクトで成功応答）。
-- feat(logging): デバッグ指定の統一（CLI/ENV/YAML 同義）。`--debug` / `DEBUG=1|<path>` / `server.debug(.debug_file)` の優先度を CLI > ENV > YAML で統一。`DEBUG_MCP` は廃止（後方互換のため非推奨扱いのみ）。
-- docs: `protocolVersion` を `2025-06-18` に統一。トランスポート/仕様の該当セクション更新。
-- chore: スモークに `scripts/mcp-smoke-ping.js` を追加（`ping` 確認用）。
+- fix(protocol): Removed `capabilities.roots` from `initialize` response (stopped advertising unimplemented features). Prevents disconnection from `roots/list` calls from Claude Code.
+- feat(protocol): Minimal implementation of `ping` (for health checks, successful response with empty object).
+- feat(logging): Unified debug specification (CLI/ENV/YAML equivalent). Standardized priority of `--debug` / `DEBUG=1|<path>` / `server.debug(.debug_file)` as CLI > ENV > YAML. `DEBUG_MCP` deprecated (only treated as deprecated for backward compatibility).
+- docs: Standardized `protocolVersion` to `2025-06-18`. Updated relevant transport/specification sections.
+- chore: Added `scripts/mcp-smoke-ping.js` to smoke tests (for `ping` verification).
 
 ## [0.4.7] - 2025-08-19
-- docs: 表現を統一（「薄い/Thin MCP server」→「軽量な/Lightweight MCP server」）
-  - 対象: `README.md`, `docs/spec.md`, `package.json(description)`
-- meta: `docs/spec.md` の版数・最終更新日を更新
-- note: 機能・API・設定仕様に変更なし（ドキュメントのみ）
+- docs: Unified expression ("thin MCP server" → "lightweight MCP server")
+  - Targets: `README.md`, `docs/spec.md`, `package.json(description)`
+- meta: Updated version and last update date in `docs/spec.md`
+- note: No changes to functionality, API, or configuration specifications (documentation only)
 
 ## [0.4.6] - 2025-08-19
-- 初回正式リリース（First official release）
-- 特長:
-  - OpenAI Responses API 準拠（公式JS SDK `openai`）
-  - `web_search` を常時許可し、実際の検索実行はモデルに委譲
-  - 構造化出力（本文・`used_search`・`citations[]`・`model`）
-  - System Policy はコード内SSOT（`src/policy/system-policy.ts`）
-  - MCP stdio 実装（`initialize` / `tools/list` / `tools/call`）
+- First official release
+- Features:
+  - OpenAI Responses API compliant (official JS SDK `openai`)
+  - Always allows `web_search`, delegates actual search execution to the model
+  - Structured output (content, `used_search`, `citations[]`, `model`)
+  - System Policy is SSOT in code (`src/policy/system-policy.ts`)
+  - MCP stdio implementation (`initialize` / `tools/list` / `tools/call`)

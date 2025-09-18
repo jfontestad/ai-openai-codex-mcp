@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Test purpose: Send notifications/cancelled immediately after tools/call execution,
-// and verify that result/error for that id is not output (suppressed).
-// If OPENAI_API_KEY is not set, skip (exit 0).
+// テスト目的: tools/call 実行直後に notifications/cancelled を送り、
+// 当該 id の result/error が出力されない（抑止される）ことを確認するスモーク。
+// OPENAI_API_KEY が未設定の場合はスキップ（exit 0）。
 
 import { spawn } from 'node:child_process';
 
@@ -22,7 +22,7 @@ let sawCallResponse = false;
 child.stdout.on('data', b => {
   const t = b.toString('utf8');
   process.stdout.write(b);
-  // Response suppression check: detect if result/error for id:3 appears
+  // 応答抑止の確認: id:3 の result/error が出たら検出
   if (/"id"\s*:\s*3/.test(t) && (/"result"|"error"/.test(t))) {
     sawCallResponse = true;
     console.error('[test] UNEXPECTED: received response for id=3 after cancel');
@@ -44,7 +44,7 @@ setTimeout(() => {
   }, 40);
 }, 80);
 
-// 3) Allow observation time and exit (if suppressed, id:3 response won't appear)
+// 3) 観測用の時間をおいて終了（抑止されていれば id:3 の応答は出ない）
 setTimeout(() => {
   try { child.kill(); } catch {}
   const ok = !sawCallResponse;

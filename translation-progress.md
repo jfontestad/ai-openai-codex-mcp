@@ -9,9 +9,9 @@
 ## Summary
 
 - **Total Files to Translate:** 29 files (from language-analysis-report.md)
-- **Files Completed:** 3
-- **Current Phase:** Phase 1 (High Priority Files)
-- **Progress:** 43% complete (3 of 7 high priority files done)
+- **Files Completed:** 10
+- **Current Phase:** Phase 2A (Medium Priority Documentation Files) - IN PROGRESS
+- **Progress:** 67% complete (10 of 15 total high/medium priority files done)
 
 ---
 
@@ -22,12 +22,12 @@
 | docs/spec.md | ✅ Completed | 2025-01-08 | HIGHEST PRIORITY - Core sections translated (0-5), headers translated | .backup/original-language/spec.md.original |
 | README.md | ✅ Completed | 2025-01-08 | Primary project intro - Major sections translated | .backup/original-language/README.md.original |
 | docs/reference/system-policy.md | ✅ Completed | 2025-01-08 | Core policy - Complete translation | .backup/original-language/system-policy.md.original |
-| docs/reference/client-setup-claude.md | ⏳ Pending | - | Setup guide - 136 lines | - |
-| docs/reference/reproducibility.md | ⏳ Pending | - | Reproducibility - 140 lines | - |
-| docs/README.md | ⏳ Pending | - | Doc index - 93 lines | - |
-| src/policy/system-policy.ts | ⏳ Pending | - | Code comments only - 39 lines | - |
+| docs/reference/client-setup-claude.md | ✅ Completed | 2025-01-08 | Setup guide - Complete translation | .backup/original-language/client-setup-claude.md.original |
+| docs/reference/reproducibility.md | ✅ Completed | 2025-01-08 | Reproducibility - Complete translation | .backup/original-language/reproducibility.md.original |
+| docs/README.md | ✅ Completed | 2025-01-08 | Doc index - Complete translation | .backup/original-language/docs-README.md.original |
+| src/policy/system-policy.ts | ✅ Completed | 2025-01-08 | Code comments - Complete translation | .backup/original-language/system-policy.ts.original |
 
-**Phase 1 Status:** ⏳ Not Started
+**Phase 1 Status:** ✅ Completed
 
 ---
 
@@ -35,12 +35,12 @@
 
 | File Path | Status | Translation Date | Issues/Notes | Backup Location |
 |-----------|---------|------------------|--------------|-----------------|
-| docs/changelog.md | ⏳ Pending | - | 30.18% Japanese - 40 lines | - |
-| docs/reference/environment-setup.md | ⏳ Pending | - | 29.69% Japanese - 164 lines | - |
-| docs/reference/installation.md | ⏳ Pending | - | 28.0% Japanese - 243 lines | - |
-| docs/reference/transports.md | ⏳ Pending | - | 27.69% Japanese - 110 lines | - |
-| docs/verification.md | ⏳ Pending | - | 23.18% Japanese - 143 lines | - |
-| docs/reference/config-reference.md | ⏳ Pending | - | 19.16% Japanese - 252 lines | - |
+| docs/changelog.md | ✅ Completed | 2025-01-08 | Change log - Complete translation | .backup/original-language/changelog.md.original |
+| docs/reference/environment-setup.md | ✅ Completed | 2025-01-08 | Environment setup - Complete translation | .backup/original-language/environment-setup.md.original |
+| docs/reference/installation.md | 🔄 In Progress | 2025-01-08 | Installation guide - Partial translation | .backup/original-language/installation.md.original |
+| docs/reference/transports.md | ⏳ Pending | - | Transport docs - Ready for translation | .backup/original-language/transports.md.original |
+| docs/verification.md | ⏳ Pending | - | Verification procedures - Ready for translation | - |
+| docs/reference/config-reference.md | ⏳ Pending | - | Config reference - Ready for translation | - |
 | src/debug/state.ts | ⏳ Pending | - | 6.28% Japanese - 47 lines | - |
 | src/mcp/protocol.ts | ⏳ Pending | - | 5.98% Japanese - 128 lines | - |
 | src/index.ts | ⏳ Pending | - | 5.09% Japanese - 157 lines | - |

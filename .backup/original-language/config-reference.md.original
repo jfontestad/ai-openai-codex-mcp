@@ -1,91 +1,91 @@
 
-# Configuration Reference — `docs/reference/config-reference.md`
-Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
+# 設定リファレンス — `docs/reference/config-reference.md`
+最終更新: 2025-08-15（Asia/Tokyo, AI確認）
 
-This document provides a complete specification for **openai-responses-mcp** configuration.
-Configuration **priority** is **CLI > ENV > YAML > TS defaults** (last wins, objects are deep merged / arrays are replaced).
-
----
-
-## 1. Load Order and Priority Rules
-
-1. **TS defaults** (defaults in source code)
-2. **YAML** (`--config <path>` or default path)
-3. **ENV** (environment variables)
-4. **CLI** (`--model` etc.)
-
-- **Merge rules**: Objects are deep merged. **Arrays are replaced** (not concatenated).
-- Actually applied final values can be checked with `--show-config` (`sources` also outputs where they were reflected from). Output destination is stderr.
+本ドキュメントは **openai-responses-mcp** の設定仕様を完全記述します。  
+設定の**優先順位**は **CLI > ENV > YAML > TS defaults**（後勝ち、オブジェクトは深いマージ／配列は置換）。
 
 ---
 
-## 2. Default YAML Paths
+## 1. ロード順序と優先規則
 
-- macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`
+1. **TS defaults**（ソース内の既定値）
+2. **YAML**（`--config <path>` または既定パス）
+3. **ENV**（環境変数）
+4. **CLI**（`--model` など）
+
+- **マージ規則**：オブジェクトは深いマージ。**配列は置換**（連結しない）。  
+- 実際に適用された最終値は `--show-config` で確認できます（`sources` にどこから反映されたかも出力）。出力先はstderrです。
+
+---
+
+## 2. 既定の YAML パス
+
+- macOS/Linux: `~/.config/openai-responses-mcp/config.yaml`  
 - Windows: `%APPDATA%\openai-responses-mcp\config.yaml`
 
-If you specify `--config <path>`, that path will be used. If it doesn't exist, YAML is skipped.
+`--config <path>` を指定すると、そのパスを使用します。存在しない場合は YAML はスキップされます。
 
 ---
 
-## 3. Configuration Schema (Logical Structure)
+## 3. 設定スキーマ（論理構造）
 
 ```yaml
 openai:
-  api_key_env: string              # e.g., OPENAI_API_KEY (ENV name)
-  base_url: string                 # e.g., https://api.openai.com/v1
+  api_key_env: string              # 例: OPENAI_API_KEY（ENV名）
+  base_url: string                 # 例: https://api.openai.com/v1
 
-# Multi-profile configuration
+# マルチプロファイル設定
 model_profiles:
-  answer:                          # Standard tool (required)
-    model: string                  # e.g., gpt-5-mini
-    reasoning_effort: string       # low|medium|high (recommended)
+  answer:                          # 基準ツール（必須）
+    model: string                  # 例: gpt-5-mini
+    reasoning_effort: string       # low|medium|high（推奨）
     verbosity: string              # low|medium|high
-  answer_detailed:                 # Detailed analysis (optional)
-    model: string                  # e.g., gpt-5
+  answer_detailed:                 # 詳細分析（オプション）
+    model: string                  # 例: gpt-5
     reasoning_effort: string
     verbosity: string
-  answer_quick:                    # Fast response (optional)
-    model: string                  # e.g., gpt-5-nano
+  answer_quick:                    # 高速回答（オプション）
+    model: string                  # 例: gpt-5-nano
     reasoning_effort: string
     verbosity: string
 
 request:
-  timeout_ms: number               # e.g., 300000 (ms)
-  max_retries: number              # 0..10 recommended
+  timeout_ms: number               # 例: 300000（ms）
+  max_retries: number              # 0..10 を推奨
 
 policy:
   prefer_search_when_unsure: boolean
   max_citations: number            # 1..10
   require_dates_iso: boolean
   system:
-    source: "builtin" | "file"     # default builtin (YAML-only control)
-    path: string                   # e.g., ~/.config/openai-responses-mcp/policy.md
-    merge: "replace"|"prepend"|"append" # default replace
+    source: "builtin" | "file"     # 既定 builtin（YAMLのみで制御）
+    path: string                   # 例: ~/.config/openai-responses-mcp/policy.md
+    merge: "replace"|"prepend"|"append" # 既定 replace
 
 search:
   defaults:
     recency_days: number           # >=0
     max_results: number            # 1..10
-    domains: string[]              # preferred domains (can be empty)
+    domains: string[]              # 優先ドメイン（空可）
 
 server:
-  transport: "stdio"               # default "stdio"
-  debug: boolean                   # default false (ON for detailed logs)
-  debug_file: string|null          # default null (when path specified: file + screen mirror)
-  show_config_on_start: boolean    # default false (output effective config summary to stderr on startup)
+  transport: "stdio"               # 既定 "stdio"
+  debug: boolean                   # 既定 false（ONで詳細ログ）
+  debug_file: string|null          # 既定 null（パス指定時はファイル＋画面ミラー）
+  show_config_on_start: boolean    # 既定 false（起動時にstderrへ実効設定の要約を出力）
 ```
 
 ---
 
-## 4. Defaults (TS defaults)
+## 4. 既定値（TS defaults）
 
 ```yaml
 openai:
   api_key_env: OPENAI_API_KEY
   base_url: https://api.openai.com/v1
 
-# Multi-profile defaults
+# マルチプロファイル既定値
 model_profiles:
   answer: { model: gpt-5-mini, reasoning_effort: medium, verbosity: medium }
 
@@ -162,11 +162,11 @@ server:
 
 ## 6. 環境変数（ENV）
 
-> The ENV variables listed here take **priority over YAML** when set.
+> ここに列挙される ENV がセットされている場合、**YAML より優先**されます。
 
 | ENV 名 | 型/範囲 | 反映先 | 説明 |
 |---|---|---|---|
-| `OPENAI_API_KEY` | string | OpenAI authentication | **Required**. ENV name pointed to by `openai.api_key_env` (configurable). |
+| `OPENAI_API_KEY` | string | OpenAI 認証 | **必須**。`openai.api_key_env` が指す ENV 名（変更可能）。 |
 | `OPENAI_API_TIMEOUT` | number(ms) | `request.timeout_ms` | >0 |
 | `OPENAI_MAX_RETRIES` | integer | `request.max_retries` | 0..10 |
 | `SEARCH_MAX_RESULTS` | integer | `search.defaults.max_results` | 1..10 |
@@ -177,12 +177,12 @@ server:
 | `ANSWER_EFFORT` | enum | `model_profiles.answer.reasoning_effort` | `low`/`medium`/`high` |
 | `ANSWER_VERBOSITY` | enum | `model_profiles.answer.verbosity` | `low`/`medium`/`high` |
 
-> When `openai.api_key_env` is changed to `MY_KEY`, set **`MY_KEY`**. `OPENAI_API_KEY` will not be read.
+> `openai.api_key_env` を `MY_KEY` に変えた場合、**`MY_KEY`** を設定してください。`OPENAI_API_KEY` は見られません。
 
 補足（デバッグ有効化の単一判定）
 - デバッグは CLI / ENV / YAML を同義とし、優先度は **CLI > ENV > YAML**。
 - アプリ起動時に最終状態（enabled/file）を確定し、以降は共通判定（`isDebug()`）に従う。
-- Even when only `server.debug: true` is specified in YAML, debug logs are equally enabled in all modules.
+- YAML のみで `server.debug: true` が指定された場合でも、すべてのモジュールで等しくデバッグログが有効になる。
 
 ---
 
@@ -234,19 +234,19 @@ node build/index.js --show-config 2> effective-config.json
 - `search.defaults.recency_days` ≥ 0  
   
 
-Invalid values may not necessarily cause errors and may be applied as-is. We recommend inspecting the JSON (stderr) from `--show-config` in CI.
+不正な値はエラーとは限らず、そのまま適用される場合があります。CI で `--show-config` の JSON（stderr）を検査することを推奨します。
 
 ---
 
 ## 10. セキュリティ注意
-- **API keys are not written to YAML**. Always obtained from ENV (variable pointed to by `openai.api_key_env`).
+- **API キーは YAML に書かない**。常に ENV（`openai.api_key_env` が指す変数）から取得。
 - `base_url` を私設プロキシに向ける場合は、組織のセキュリティ方針に従ってください。
 
 ---
 
-<!-- Additional parameter considerations (undecided items) are moved to docs/_drafts/config-additional-params.md -->
+<!-- 追加パラメータの検討（未定事項）は docs/_drafts/config-additional-params.md へ退避 -->
 
 ## 12. よくある質問（抜粋）
-- **Q: Works without YAML?** → Yes. Works with just TS defaults and ENV/CLI.
-- **Q: Multiple domains?** → Passed as hints, influences model's search decisions (not forced filtering).
-- **Q: Why always allow web_search?** → Let model decide "execute when needed" to prevent missing **current events**.
+- **Q: YAML が無くても動く？** → はい。TS defaults と ENV/CLI だけでも動作します。  
+- **Q: `domains` を複数入れたら？** → ヒントとして渡され、モデルの検索判断に影響します（強制フィルタではありません）。  
+- **Q: `web_search` を常時許可するのはなぜ？** → 「必要と判断したら実行」をモデルに委ね、**時事性**の取りこぼしを防ぐためです。

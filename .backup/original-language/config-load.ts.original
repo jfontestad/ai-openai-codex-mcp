@@ -39,7 +39,7 @@ function fromYaml(path?: string): PartialDeep<Config> {
 function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
   const copy = JSON.parse(JSON.stringify(cfg)) as Config;
 
-  // Model (answer) quick override
+  // モデル（answer）クイック上書き
   if (env.MODEL_ANSWER) {
     if (!copy.model_profiles.answer) copy.model_profiles.answer = { model: '', reasoning_effort: 'medium', verbosity: 'medium' } as any;
     copy.model_profiles.answer.model = String(env.MODEL_ANSWER);
@@ -74,8 +74,8 @@ function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
     if (!Number.isNaN(n) && n >= 1 && n <= 10) copy.policy.max_citations = n;
   }
   // DEBUG の統一仕様:
-  // - If `DEBUG` is "1"/"true", then server.debug = true
-  // - Otherwise, if non-empty string, then server.debug = true and store value in server.debug_file
+  // - `DEBUG` が "1"/"true" なら server.debug = true
+  // - それ以外の非空文字列なら、server.debug = true かつ server.debug_file に値を格納
   if (env.DEBUG !== undefined) {
     const vraw = String(env.DEBUG);
     const v = vraw.toLowerCase();
@@ -121,9 +121,9 @@ export function loadConfig(opts: LoadOptions): Loaded {
     for (const k of keys) if (opts.env[k] !== undefined) envTouched.push(k);
   }
 
-  // Model override from CLI not supported (unified in YAML)
+  // CLIからのモデル上書きはサポートしない（YAMLに統一）
 
-  // Configuration value validation (fail fast)
+  // 設定値のバリデーション（フェイルファスト）
   validateConfig(current);
 
   return {

@@ -30,7 +30,7 @@ function pkgVersion(): string {
     return "0.0.0";
   }
 }
-// Debug determination unified to common isDebug()
+// デバッグ判定は共通の isDebug() に統一
 
 function sendResult(id: number | string, result: any) {
   writeMessage({ jsonrpc: "2.0", id, result });
@@ -41,9 +41,9 @@ function sendError(id: number | string, code: number, message: string, data?: an
 
 export function startServer(cfg: Config) {
   if (isDebug()) logInfo(`server.start pid=${process.pid}`);
-  // In-flight requests: id -> { controller, cancelled }
+  // 進行中リクエスト: id -> { controller, cancelled }
   const inflight = new Map<number | string, { controller: AbortController; cancelled: boolean }>();
-  // Startup summary (stderr, doesn't pollute MCP stdout)
+  // 起動時要約（stderr、MCPのstdoutを汚さない）
   try {
     const srv: any = (cfg as any).server || {};
     const mp: any = (cfg as any).model_profiles?.answer || {};
@@ -65,7 +65,7 @@ export function startServer(cfg: Config) {
     if (msg.method === "initialize" && msg.id !== undefined) {
       const res = {
         protocolVersion: PROTOCOL,
-        // This server doesn't implement roots, so don't advertise it (tools only)
+        // 本サーバは roots を未実装のため広告しない（tools のみ）
         capabilities: { tools: {} },
         serverInfo: { name: "openai-responses-mcp", version: pkgVersion() }
       };
@@ -90,7 +90,7 @@ export function startServer(cfg: Config) {
           logInfo(`tools/call name=${name} argsKeys=[${keys.join(',')}] queryLen=${qlen ?? '-'}`);
         } catch {}
       }
-      // Use directly as profile name
+      // プロファイル名として直接使用
       if (name && name in TOOL_DEFINITIONS) {
         try {
           // リクエスト毎の AbortController を準備（キャンセル通知で中断）
@@ -114,7 +114,7 @@ export function startServer(cfg: Config) {
           let etype: any = '-';
           let ename: any = '-';
           let emsg: string = e?.message || String(e);
-          // Suppress errors after cancellation (no response)
+          // キャンセル後のエラーは握りつぶし（応答しない）
           const cur = inflight.get(msg.id);
           const aborted = cur?.cancelled || cur?.controller?.signal?.aborted;
           if (aborted) {
@@ -145,7 +145,7 @@ export function startServer(cfg: Config) {
       return;
     }
 
-    // Cancellation notification (notification only, no response needed)
+    // キャンセル通知（通知なので応答不要）
     if (msg.method === "notifications/cancelled") {
       try {
         const rid = (msg?.params as any)?.requestId;
