@@ -1,14 +1,25 @@
 import OpenAI from "openai";
 import { isDebug } from "../debug/state.js";
 import { Config } from "../config/defaults.js";
+import { credentialLogger, resolveOpenAICredentials } from "./credentials.js";
 
-export function createClient(cfg: Config) {
-  const apiKey = process.env[cfg.openai.api_key_env];
-  if (!apiKey) {
-    throw new Error(`Missing API key: set ${cfg.openai.api_key_env}`);
+export async function createClient(cfg: Config) {
+  const resolution = await resolveOpenAICredentials(cfg, { env: process.env, logger: credentialLogger });
+
+  if (resolution.state === "degraded") {
+    credentialLogger.warn(resolution.detail);
   }
+
+  if (!resolution.apiKey) {
+    throw new Error(`Unable to obtain OpenAI credentials: ${resolution.detail}`);
+  }
+
+  if (isDebug()) {
+    console.error(`[codex-auth] using source=${resolution.source} state=${resolution.state}`);
+  }
+
   const client = new OpenAI({
-    apiKey,
+    apiKey: resolution.apiKey,
     baseURL: cfg.openai.base_url
   });
   return client;

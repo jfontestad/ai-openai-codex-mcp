@@ -35,6 +35,16 @@ openai:
   api_key_env: string              # e.g., OPENAI_API_KEY (ENV name)
   base_url: string                 # e.g., https://api.openai.com/v1
 
+codex:
+  enabled: boolean                 # default true (reuse Codex CLI auth)
+  authPath: string                 # e.g., ~/.codex/auth.json (tilde/env expand)
+  autoRefresh: boolean             # default true (invoke codex auth refresh)
+  permissionStrict: boolean        # default true (enforce 0600 on Unix)
+  cacheTtlMs: number               # cache lifetime in ms (default 300000)
+  cacheMaxEntries: number          # LRU cache size (default 4)
+  validationRateLimitMs: number    # min interval between validation pings (default 300000)
+  healthCheckPort: number?         # optional (HTTP health endpoint)
+
 # Multi-profile configuration
 model_profiles:
   answer:                          # Standard tool (required)
@@ -84,6 +94,24 @@ server:
 openai:
   api_key_env: OPENAI_API_KEY
   base_url: https://api.openai.com/v1
+
+codex:
+  enabled: true
+  authPath: ~/.codex/auth.json
+  autoRefresh: true
+  permissionStrict: true
+  cacheTtlMs: 300000
+  cacheMaxEntries: 4
+  validationRateLimitMs: 300000
+
+codex:
+  enabled: true
+  authPath: ~/.codex/auth.json
+  autoRefresh: true
+  permissionStrict: true
+  cacheTtlMs: 300000
+  cacheMaxEntries: 4
+  validationRateLimitMs: 300000
 
 # Multi-profile defaults
 model_profiles:
@@ -176,6 +204,8 @@ server:
 | `MODEL_ANSWER` | string | `model_profiles.answer.model` | Quick override (permanent settings should use YAML) |
 | `ANSWER_EFFORT` | enum | `model_profiles.answer.reasoning_effort` | `low`/`medium`/`high` |
 | `ANSWER_VERBOSITY` | enum | `model_profiles.answer.verbosity` | `low`/`medium`/`high` |
+| `CODEX_HOME` | path | Codex auth discovery | Overrides default `~/.codex` root when resolving `auth.json`. |
+| `CODEX_CLI_PATH` | path | Codex CLI executable | Use custom path instead of `codex` in `$PATH`. |
 
 > When `openai.api_key_env` is changed to `MY_KEY`, set **`MY_KEY`**. `OPENAI_API_KEY` will not be read.
 

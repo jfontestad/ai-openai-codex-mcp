@@ -69,7 +69,7 @@ function extractCitations(resp: any): { citations: Citation[]; used: boolean } {
 
 // `signal` is used to propagate MCP cancellation
 export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: string, signal?: AbortSignal) {
-  const client = createClient(cfg);
+  const client = await createClient(cfg);
   // SSOT (src/policy/system-policy.ts) as default, compose external policy.md if needed
   const system = resolveSystemPolicy(cfg);
   const userText = `${input.query}${toHints(input, cfg)}`;

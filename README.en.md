@@ -39,13 +39,14 @@ Important: The canonical specification is `docs/spec.md`. See that file for deta
 ## Requirements
 - Node.js v20 or later (recommended: v24)
 - npm (bundled with Node)
-- OpenAI API key (provided via environment variable)
+- OpenAI API key (provided via environment variable) **or** Codex CLI authenticated via `codex login`
 
 ---
 
 ## Minimal Setup (boot with only required settings)
-- Required setting: just the `OPENAI_API_KEY` environment variable (no YAML needed)
+- Requirement: either Codex CLI credentials (`codex login`) or the `OPENAI_API_KEY` environment variable
 - Example startup (npx):
+  - `npx openai-responses-mcp@latest --stdio` (reuses Codex CLI auth when present)
   - `export OPENAI_API_KEY="sk-..." && npx openai-responses-mcp@latest --stdio`
 
 You can add YAML later (default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`).
@@ -83,7 +84,7 @@ claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- np
 [mcp_servers.openai-responses]
 command = "npx"
 args = ["-y", "openai-responses-mcp@latest", "--stdio"]
-env = { OPENAI_API_KEY = "sk-xxxx" }
+# env is optional; Codex CLI auth.json is reused automatically when present
 ```
 
 ### 3) Example guidance for CLAUDE.md and AGENTS.md
@@ -144,7 +145,16 @@ policy:
 ```
 Sample: `config/policy.md.example`
 
-### 6) Logs and debugging
+### 6) Codex CLI authentication reuse
+- If the Codex CLI (`codex`) is installed and authenticated, the MCP server automatically reuses `$CODEX_HOME/auth.json` (default `~/.codex/auth.json`).
+- Summary:
+  - Enforces secure permissions on `auth.json` (0600 recommended when `codex.permissionStrict: true`).
+  - Silently runs `codex auth refresh --json` when tokens are stale.
+  - Automatically invokes `codex login --json` (bounded retries) if credentials are missing.
+  - Falls back to `OPENAI_API_KEY` found in `auth.json` or environment variables when auto-remediation fails.
+- Disable via YAML `codex.enabled: false` if you prefer manual key management.
+
+### 7) Logs and debugging
 - Debug ON (console): `--debug` / `DEBUG=1|true` / YAML `server.debug: true` (priority: CLI > ENV > YAML; single decision at startup)
 - Debug ON (file + console mirror): `--debug ./_debug.log` or `DEBUG=./_debug.log`
 - Debug OFF: only minimal operational logs
@@ -152,6 +162,33 @@ Sample: `config/policy.md.example`
 Notes (controlled via YAML):
 - `server.debug: true|false` (applies to all modules even if set only in YAML)
 - `server.debug_file: <path|null>` (TEE mirror to file when specified)
+
+### 8) Automated monitoring (optional)
+- Run `npm run health` to obtain a JSON health summary (exit codes: `0` healthy, `10` degraded, `1` catastrophic).
+- Example systemd service (`/etc/systemd/system/openai-responses-health.service`):
+  ```ini
+  [Unit]
+  Description=OpenAI Responses MCP health probe
+  OnFailure=openai-responses-alert@%i.service
+
+  [Service]
+  Type=oneshot
+  ExecStart=/usr/bin/npm --prefix /path/to/openai-responses-mcp run health
+  SuccessExitStatus=0 10
+  ```
+- Timer (`/etc/systemd/system/openai-responses-health.timer`):
+  ```ini
+  [Unit]
+  Description=Run OpenAI Responses MCP health probe every 5 minutes
+
+  [Timer]
+  OnBootSec=2m
+  OnUnitActiveSec=5m
+
+  [Install]
+  WantedBy=timers.target
+  ```
+- Attach an `openai-responses-alert@.service` to notify you (email, push, restart) only when the probe exits with code `1` (catastrophic). Exit code `10` (degraded) is treated as success via `SuccessExitStatus` but logged for later review.
 
 ---
 

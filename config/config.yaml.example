@@ -12,6 +12,24 @@ openai:
   # OpenAI API base URL
   base_url: https://api.openai.com/v1
 
+codex:
+  # Enable automatic reuse of Codex CLI credentials (auth.json)
+  enabled: true
+  # Default path (honors CODEX_HOME if unset)
+  authPath: ~/.codex/auth.json
+  # Automatically refresh tokens when stale (requires codex CLI)
+  autoRefresh: true
+  # Enforce strict permissions (0600 on Unix). Set false to only warn.
+  permissionStrict: true
+  # Cache lifetime for decoded credentials (milliseconds)
+  cacheTtlMs: 300000
+  # Maximum cached entries (single-user setups can leave default)
+  cacheMaxEntries: 4
+  # Limit how frequently validation pings run when tokens unchanged
+  validationRateLimitMs: 300000
+  # Optional health check HTTP port (comment out to disable)
+  # healthCheckPort: 8730
+
 request:
   # Timeout (milliseconds)
   timeout_ms: 300000

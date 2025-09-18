@@ -12,6 +12,16 @@ export interface Config {
     api_key_env: string;
     base_url: string;
   };
+  codex: {
+    enabled: boolean;
+    authPath: string;
+    autoRefresh: boolean;
+    permissionStrict: boolean;
+    cacheTtlMs: number;
+    cacheMaxEntries: number;
+    validationRateLimitMs: number;
+    healthCheckPort?: number;
+  };
   model_profiles: {
     answer: ModelProfile;
     answer_detailed?: ModelProfile;
@@ -36,6 +46,16 @@ export const defaults: Config = {
   openai: {
     api_key_env: "OPENAI_API_KEY",
     base_url: "https://api.openai.com/v1"
+  },
+  codex: {
+    enabled: true,
+    authPath: "~/.codex/auth.json",
+    autoRefresh: true,
+    permissionStrict: true,
+    cacheTtlMs: 5 * 60_000,
+    cacheMaxEntries: 4,
+    validationRateLimitMs: 5 * 60_000,
+    healthCheckPort: undefined
   },
   model_profiles: {
     answer: {
