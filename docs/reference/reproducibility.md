@@ -43,7 +43,7 @@ Saving **effective configuration** in JSON allows later reproduction of "which s
 
 ```bash
 # Save effective configuration (sources = reflection source, effective = actually used values)
-npx openai-responses-mcp --show-config 2> .snapshots/effective-config.json
+node build/index.js --show-config 2> .snapshots/effective-config.json
 ```
 
 - When `--config` is specified, the path is also recorded in `sources.yaml`.
@@ -57,7 +57,7 @@ npx openai-responses-mcp --show-config 2> .snapshots/effective-config.json
 - All relative dates are absolutized to **Asia/Tokyo** (server implementation standard).
 - During testing, explicitly setting OS `TZ` on startup helps avoid observational system differences:
 ```bash
-TZ=Asia/Tokyo npx openai-responses-mcp --show-config 2> /tmp/effective.json; head -n 5 /tmp/effective.json
+TZ=Asia/Tokyo node build/index.js --show-config 2> /tmp/effective.json; head -n 5 /tmp/effective.json
 ```
 
 ---
@@ -97,10 +97,8 @@ grep -c '"jsonrpc":"2.0"' .snapshots/mcp-ldjson.out
 
 ---
 
-## 8. Release & Tag Operations
-- When specification changes (`spec.md`) or System Policy revisions occur, raise **MINOR** or higher (semantic versioning).
-- Dependency updates only: PATCH. If judged that behavior may change: MINOR.
-- Record **rationale (why raised)** in `changelog.md`.
+## 8. Versioning (Local)
+- If you maintain versions locally, update `package.json` as needed and record rationale in `docs/changelog.md`. Do not publish.
 
 ---
 
@@ -133,7 +131,7 @@ grep -c '"jsonrpc":"2.0"' .snapshots/mcp-ldjson.out
 ---
 
 ## 12. Minimum "Successfully Reproduced" Evidence Recording Method
-- `npx openai-responses-mcp --show-config 2> .snapshots/effective-config.json`
+- `node build/index.js --show-config 2> .snapshots/effective-config.json`
 - `npm run mcp:smoke:ldjson > .snapshots/mcp-ldjson.out`
 - (Optional) `npm run mcp:smoke > .snapshots/mcp-content-length.out` (requires `OPENAI_API_KEY`)
 

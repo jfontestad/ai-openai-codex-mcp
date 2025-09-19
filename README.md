@@ -4,8 +4,10 @@
   <p><a href="./README.en.md">English</a></p>
 </div>
 
-A lightweight MCP server that adopts OpenAI Responses API as its reasoning core.  
+A lightweight MCP server that adopts OpenAI Responses API as its reasoning core.
 Always allows `web_search`, letting the model autonomously decide whether to perform searches. Use from MCP clients like Claude Code/Claude Desktop via stdio.
+
+Important: This repository is for local/personal use only. It is not intended for publishing to any registry.
 
 Important: The canonical specification is `docs/spec.md`. Please refer to it for details.
 
@@ -41,13 +43,17 @@ Important: The canonical specification is `docs/spec.md`. Please refer to it for
 - npm (bundled with Node)
 - OpenAI API key (pass via environment variable) **or** Codex CLI logged in via `codex login`
 
+Security/Privacy defaults:
+- No local interaction history is written (`server.history.enabled=false`).
+- Non-debug logging is suppressed by default (`server.quiet=true`).
+
 ---
 
-## Minimal Setup (Start with Required Settings Only)
+## Minimal Setup (Local Only)
 - Required setting: either `codex login` (recommended) or environment variable `OPENAI_API_KEY` (YAML not needed)
-- Startup examples (npx):
-  - `npx openai-responses-mcp@latest --stdio` (reuses Codex CLI auth if available)
-  - `export OPENAI_API_KEY="sk-..." && npx openai-responses-mcp@latest --stdio`
+- Build locally, then start stdio server:
+  - `npm ci && npm run build`
+  - `node build/index.js --stdio`
 
 YAML can be added later (default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`).
 
@@ -56,15 +62,15 @@ YAML can be added later (default path: macOS/Linux `~/.config/openai-responses-m
 ## For Users (Using as MCP)
 Please refer to this when using from MCP clients.
 
-### 1) Example registration with Claude Code
+### 1) Example registration with Claude Code (local path)
 - Add the following item to `~/.claude.json`
 
 ```json
 {
   "mcpServers": {
     "openai-responses": {
-      "command": "npx",
-      "args": ["openai-responses-mcp@latest", "--stdio"],
+      "command": "node",
+      "args": ["/ABS/PATH/openai-responses-mcp/build/index.js", "--stdio"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }
@@ -74,7 +80,7 @@ Please refer to this when using from MCP clients.
 - Run the following with the Claude Code CLI
 
 ```sh
-claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- npx openai-responses-mcp@latest --stdio
+claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- node /ABS/PATH/openai-responses-mcp/build/index.js --stdio
 ```
 
 ### 2) Example registration with OpenAI Codex
@@ -83,7 +89,7 @@ claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- np
 ```toml
 [mcp_servers.openai-responses]
 command = "npx"
-args = ["-y", "openai-responses-mcp@latest", "--stdio"]
+args = ["/ABS/PATH/openai-responses-mcp/build/index.js", "--stdio"]
 # env block optional; Codex CLI auth.json is reused automatically when present
 ```
 
@@ -110,10 +116,10 @@ When encountering problems or implementation difficulties during development:
    - After problem resolution, record procedures and solutions for quick response to recurrences  
 ```
 
-### 4) Direct execution with npx
+### 4) Direct execution (local)
 ```bash
-export OPENAI_API_KEY="sk-..." 
-npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
+export OPENAI_API_KEY="sk-..."
+node /ABS/PATH/openai-responses-mcp/build/index.js --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
 ```
 
 ### 5) Configuration (YAML optional)
@@ -227,13 +233,8 @@ npm run mcp:smoke:ldjson   # NDJSON-compatible connectivity check
 
 ---
 
-## For Maintainers (Distribution)
-
-### npm Package Verification and Publishing
-```bash
-npm pack --dry-run    # Verify bundled files (build/ plus README/LICENSE/samples only)
-npm publish           # Publish (no scope)
-```
+## Notes for Maintainers
+- This repository is private/local. Do not publish to any registry.
 
 ---
 

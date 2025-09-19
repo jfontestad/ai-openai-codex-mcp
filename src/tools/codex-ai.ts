@@ -87,30 +87,5 @@ export async function callCodexAI(
   return out;
 }
 
-export const codexAIToolDef = {
-  name: 'codex_ai',
-  description: 'Persona-driven Codex execution with opinionated instructions and tuned settings (keyless).',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      prompt: { type: 'string' },
-      persona: { type: 'string' },
-      thinking: { enum: ['low','medium','high'] },
-      model: { type: 'string' },
-      profile: { type: 'string' },
-      max_output_tokens: { type: 'number' },
-      temperature: { type: 'number' },
-      enabled_tools: { type: 'array', items: { type: 'string' } },
-      conversation_id: { type: 'string' },
-      sandbox: { enum: ['read-only','workspace-write','danger-full-access'] },
-      approval_policy: { enum: ['untrusted','on-failure','on-request','never'] },
-      cwd: { type: 'string' },
-      timeout_ms: { type: 'number' },
-      json_mode: { type: 'boolean' },
-      skip_git_repo_check: { type: 'boolean' },
-      code_only: { type: 'boolean' },
-      steps: { type: 'boolean' }
-    },
-    required: ['prompt']
-  }
-} as const;
+// Note: Tool schema is centralized in src/tools/tool-definitions.ts.
+// This file intentionally exports only the runtime implementation.

@@ -50,7 +50,7 @@ function parseArgs(argv: string[]): Opts {
 }
 
 function usage(): void {
-  console.log(`openai-responses-mcp (Step4)
+  console.log(`openai-responses-mcp
 Usage:
   openai-responses-mcp --help
   openai-responses-mcp --version
@@ -138,12 +138,12 @@ async function main() {
       logInfo(`cwd=${process.cwd()}`);
       logInfo(`node=${process.version}`);
     }
-    // Always emit a minimal readiness hint to stderr so users who start the
-    // binary manually understand that stdio mode is waiting for a client.
-    if (!dbgEnabled) {
+    // In personal/local mode default, suppress all non-debug logging (quiet=true)
+    const quiet = !!(loaded.effective.server as any).quiet;
+    if (!dbgEnabled && !quiet) {
       logInfo(`stdio mode ready: waiting for MCP client on stdin (send initialize). Set DEBUG=1 for verbose logs.`);
     }
-    if (showConfigPrinted) {
+    if (showConfigPrinted && !quiet) {
       logInfo(`show-config printed to stderr (continuing)`);
     }
     process.on("uncaughtException", (e) => logError(`uncaughtException ${e}`));

@@ -84,6 +84,9 @@ server:
   debug: boolean                   # default false (ON for detailed logs)
   debug_file: string|null          # default null (when path specified: file + screen mirror)
   show_config_on_start: boolean    # default false (output effective config summary to stderr on startup)
+  quiet: boolean                   # default true (suppress non-debug logs)
+  history:
+    enabled: boolean               # default false (never writes local interaction history)
 ```
 
 ---
@@ -127,7 +130,7 @@ policy:
 search:
   defaults: { recency_days: 60, max_results: 5, domains: [] }
 
-server: { transport: stdio, debug: false, debug_file: null, show_config_on_start: false }
+server: { transport: stdio, debug: false, debug_file: null, show_config_on_start: false, quiet: true, history: { enabled: false } }
 ```
 
 ---
@@ -184,6 +187,9 @@ server:
   debug: true
   debug_file: ./_debug.log
   show_config_on_start: true
+  quiet: false
+  history:
+    enabled: false
 ```
 
 ---

@@ -151,21 +151,5 @@ export async function callCodexExec(
   return { message: lastMessage, tokens: totalTokens, stderr: stderr.trim(), code };
 }
 
-export const codexExecToolDef = {
-  name: "codex_exec",
-  description: "Run a non-interactive Codex session via CLI (no API key required). Useful fallback when OpenAI Responses is unavailable.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      prompt: { type: "string" },
-      model: { type: "string" },
-      profile: { type: "string" },
-      cwd: { type: "string" },
-      search: { type: "boolean" },
-      sandbox: { enum: ["read-only","workspace-write","danger-full-access"] },
-      approval_policy: { enum: ["untrusted","on-failure","on-request","never"] },
-      config: { type: "object", additionalProperties: true }
-    },
-    required: ["prompt"]
-  }
-};
+// Note: Tool schema is centralized in src/tools/tool-definitions.ts.
+// This file intentionally exports only the runtime implementation.

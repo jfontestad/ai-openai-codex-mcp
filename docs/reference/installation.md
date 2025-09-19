@@ -1,9 +1,9 @@
 
-# Installation Instructions (Local / npm) - `docs/reference/installation.md`
+# Installation Instructions (Local Only) - `docs/reference/installation.md`
 Last Updated: 2025-08-15 (Asia/Tokyo, AI verified)
 
-This document provides **complete procedures** for building and using **openai-responses-mcp** in local environments.
-**npm pinning** (we don't handle pnpm/yarn). For MCP client (Claude) registration, refer to the separate `client-setup-claude.md`.
+This document provides procedures for building and using **openai-responses-mcp** locally (personal use).
+This project is not intended for publishing to any registry. For MCP client (Claude) registration, refer to `client-setup-claude.md`.
 
 ---
 
@@ -26,14 +26,15 @@ npm -v
 - Startup (no YAML needed):
 ```bash
 export OPENAI_API_KEY="sk-..."
-npx openai-responses-mcp@latest --stdio
+npm ci && npm run build
+node build/index.js --stdio
 ```
 - Verification: If `initialize` and `tools/list` return from client (Claude), connectivity is OK.
 
 ---
 
 ## 2. Acquisition Methods
-### 2.1 Download and Extract ZIP from GitHub
+### 2.1 Clone or Download Locally
 ```
 openai-responses-mcp/
   - src/ ...            # TypeScript source
@@ -44,7 +45,7 @@ openai-responses-mcp/
   - tsconfig.json
 ```
 
-> Repository operation is optional. Here we assume ZIP extraction.
+> This guide assumes local use only (no registry publishing).
 
 ---
 
@@ -56,7 +57,7 @@ npm run build
 ```
 
 - On success, `build/index.js` is generated.
-- After this, CLI can be launched with `node build/index.js` or `npx openai-responses-mcp` (when installed as npm package).
+- After this, launch with `node build/index.js`.
 
 ---
 
@@ -111,9 +112,9 @@ node build/index.js --version
 node build/index.js --help
 
 # Check effective configuration (sources show where settings come from)
-npx openai-responses-mcp --show-config 2> effective.json
-npx openai-responses-mcp --show-config --config ./config/config.yaml 2> effective.json
-MODEL_ANSWER=gpt-5 npx openai-responses-mcp --show-config 2> effective.json
+node build/index.js --show-config 2> effective.json
+node build/index.js --show-config --config ./config/config.yaml 2> effective.json
+MODEL_ANSWER=gpt-5 node build/index.js --show-config 2> effective.json
 ```
 
 Expected example (excerpt):
@@ -127,37 +128,8 @@ Expected example (excerpt):
 
 ---
 
-## 7. Verify Installation Location (Local/Global/npx)
-
-### 7.1 Local (Under project or tgz pseudo-installation)
-If you run `npm i` or `npm i <tgz>` immediately, it will be placed in the current `node_modules`.
-
-Example (continuation of tgz pseudo-installation procedure):
-```
-echo "$TMP"
-ls -la "$TMP/node_modules/openai-responses-mcp"
-ls -la "$TMP/node_modules/.bin"
-"$TMP/node_modules/.bin/openai-responses-mcp" --show-config 2> effective.json
-```
-
-### 7.2 Global Installation (Optional)
-Running `npm i -g openai-responses-mcp` will place it in the global bin directory. Usually `npx` is sufficient.
-
-```
-npm bin -g
-which openai-responses-mcp
-```
-
-### 7.3 npx Execution (Cache)
-`npx openai-responses-mcp@latest` is temporarily downloaded to npm cache and executed (path depends on internal implementation).
-The operation flow can be confirmed with verbose mode.
-
-```
-npx -y openai-responses-mcp@latest --version --loglevel=verbose
-npm config get cache   # Cache directory location
-```
-
-> Note: `npx` cache location varies by environment and npm version. For permanent location fixing, install locally (project) or globally.
+## 7. Execution Location
+Run directly from your cloned project directory. Global or `npx` usage is not supported in this setup.
 
 ---
 
@@ -201,30 +173,14 @@ If you can confirm 3 responses of `initialize -> tools/list -> tools/call(answer
 
 ---
 
-## 10. Introduction as npm Package (Local Verification)
-Generate package in repository root and verify `npx` execution by installing from **separate directory**.
-
-```bash
-# Package generation
-npm pack
-
-# Verification in temporary directory
-TMP=$(mktemp -d); pushd "$TMP" >/dev/null
-npm init -y >/dev/null
-npm i "$OLDPWD"/openai-responses-mcp-*.tgz >/dev/null
-npx openai-responses-mcp --help
-npx openai-responses-mcp --version
-popd >/dev/null
-```
-
-> Effective for pre-publication local verification. Use `npm publish` for official publication.
+## 10. (Removed) Registry Publishing
+This project is local-only. Do not publish packages or verify via `npx`/`npm pack`.
 
 ---
 
 ## 11. Uninstall / Cleanup
 - Remove local dependencies: `rm -rf node_modules/` (Windows: `rd /s /q node_modules`)
 - Remove build artifacts: `rm -rf build/`
-- Remove npm global installation (optional): `npm uninstall -g openai-responses-mcp`
 
 ---
 

@@ -19,13 +19,13 @@ Claude-family clients (Claude Code / Claude Desktop) commonly register servers u
 map structure. **Open the configuration file from the client UI (Settings -> Developer) to find the exact location**.
 Do not specify paths directly - **always edit the file opened through the UI**.
 
-### 2.1 Configuration Example (Minimal/Recommended)
+### 2.1 Configuration Example (Minimal/Recommended; local path)
 ```json
 {
   "mcpServers": {
     "openai-responses": {
-      "command": "npx",
-      "args": ["openai-responses-mcp@latest", "--stdio"],
+      "command": "node",
+      "args": ["/ABS/PATH/openai-responses-mcp/build/index.js", "--stdio"],
       "env": {
         "OPENAI_API_KEY": "sk-..."
       }
