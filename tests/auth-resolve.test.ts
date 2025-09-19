@@ -52,7 +52,7 @@ test("resolveOpenAICredentials returns degraded for Codex API key", async () => 
   assert.equal(result.source, "codex_api_key");
 });
 
-test("resolveOpenAICredentials falls back to env when Codex fails", async () => {
+test("resolveOpenAICredentials prefers env when set (no Codex calls)", async () => {
   const cfg = baseConfig();
   let loaderCalls = 0;
   const result = await resolveOpenAICredentials(cfg, {
@@ -61,15 +61,15 @@ test("resolveOpenAICredentials falls back to env when Codex fails", async () => 
       createLoader: () => ({
         getToken: async () => {
           loaderCalls += 1;
-          throw new Error("simulated failure");
+          return { kind: "oauth", accessToken: "token", refreshToken: "r", metadata: { path: "/tmp/auth.json", lastRefresh: null } };
         }
       }) as any
     },
     logger: { info: () => {}, warn: () => {}, error: () => {} }
   });
 
-  assert.equal(loaderCalls, 1);
-  assert.equal(result.state, "degraded");
+  assert.equal(loaderCalls, 0, "env should short-circuit Codex path");
+  assert.equal(result.state, "healthy");
   assert.equal(result.source, "env_api_key");
   assert.equal(result.apiKey, "sk-env");
 });

@@ -73,6 +73,31 @@ function applyEnv(cfg: Config, env: NodeJS.ProcessEnv): Config {
     const n = Number(env.MAX_CITATIONS);
     if (!Number.isNaN(n) && n >= 1 && n <= 10) copy.policy.max_citations = n;
   }
+  // Codex defaults via ENV
+  if (env.CODEX_DEFAULT_SANDBOX) {
+    const v = String(env.CODEX_DEFAULT_SANDBOX);
+    if (['read-only','workspace-write','danger-full-access'].includes(v)) (copy as any).codex_defaults.sandbox = v as any;
+  }
+  if (env.CODEX_DEFAULT_APPROVAL_POLICY) {
+    const v = String(env.CODEX_DEFAULT_APPROVAL_POLICY);
+    if (['untrusted','on-failure','on-request','never'].includes(v)) (copy as any).codex_defaults.approval_policy = v as any;
+  }
+  if (env.CODEX_DEFAULT_TIMEOUT_MS) {
+    const n = Number(env.CODEX_DEFAULT_TIMEOUT_MS);
+    if (!Number.isNaN(n) && n > 0) (copy as any).codex_defaults.timeout_ms = n;
+  }
+  if (env.CODEX_DEFAULT_JSON_MODE !== undefined) {
+    const v = String(env.CODEX_DEFAULT_JSON_MODE).toLowerCase();
+    (copy as any).codex_defaults.json_mode = (v === '1' || v === 'true' || v === 'yes');
+  }
+  if (env.CODEX_DEFAULT_SKIP_GIT_REPO_CHECK !== undefined) {
+    const v = String(env.CODEX_DEFAULT_SKIP_GIT_REPO_CHECK).toLowerCase();
+    (copy as any).codex_defaults.skip_git_repo_check = (v === '1' || v === 'true' || v === 'yes');
+  }
+  if (env.EXPOSE_ANSWER_TOOLS !== undefined) {
+    const v = String(env.EXPOSE_ANSWER_TOOLS).toLowerCase();
+    copy.server.expose_answer_tools = (v === '1' || v === 'true' || v === 'yes');
+  }
   // Unified DEBUG specification:
   // - If `DEBUG` is "1"/"true", then server.debug = true
   // - Otherwise, if non-empty string, then server.debug = true and store value in server.debug_file
@@ -116,7 +141,13 @@ export function loadConfig(opts: LoadOptions): Loaded {
       "SEARCH_MAX_RESULTS",
       "SEARCH_RECENCY_DAYS",
       "MAX_CITATIONS",
-      "DEBUG"
+      "DEBUG",
+      "EXPOSE_ANSWER_TOOLS",
+      "CODEX_DEFAULT_SANDBOX",
+      "CODEX_DEFAULT_APPROVAL_POLICY",
+      "CODEX_DEFAULT_TIMEOUT_MS",
+      "CODEX_DEFAULT_JSON_MODE",
+      "CODEX_DEFAULT_SKIP_GIT_REPO_CHECK"
     ];
     for (const k of keys) if (opts.env[k] !== undefined) envTouched.push(k);
   }

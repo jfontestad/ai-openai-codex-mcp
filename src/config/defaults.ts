@@ -39,7 +39,14 @@ export interface Config {
     };
   };
   search: { defaults: { recency_days: number; max_results: number; domains: string[] } };
-  server: { transport: Transport; debug: boolean; debug_file: string | null; show_config_on_start: boolean };
+  server: { transport: Transport; debug: boolean; debug_file: string | null; show_config_on_start: boolean; expose_answer_tools: boolean };
+  codex_defaults: {
+    sandbox: 'read-only' | 'workspace-write' | 'danger-full-access';
+    approval_policy: 'untrusted' | 'on-failure' | 'on-request' | 'never';
+    timeout_ms: number;
+    json_mode: boolean;
+    skip_git_repo_check: boolean;
+  };
 }
 
 export const defaults: Config = {
@@ -72,5 +79,12 @@ export const defaults: Config = {
     system: { source: "builtin", merge: "replace" }
   },
   search: { defaults: { recency_days: 60, max_results: 5, domains: [] } },
-  server: { transport: "stdio", debug: false, debug_file: null, show_config_on_start: false }
+  server: { transport: "stdio", debug: false, debug_file: null, show_config_on_start: false, expose_answer_tools: true },
+  codex_defaults: {
+    sandbox: 'read-only',
+    approval_policy: 'on-failure',
+    timeout_ms: 15 * 60 * 1000,
+    json_mode: true,
+    skip_git_repo_check: true
+  }
 };

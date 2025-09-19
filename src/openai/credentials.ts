@@ -59,6 +59,19 @@ export async function resolveOpenAICredentials(cfg: Config, opts: ResolveOptions
   const logger = opts.logger ?? defaultLogger;
   const loaderFactory = opts.dependencies?.createLoader ?? defaultLoaderFactory;
 
+  // 1) ENV override (highest priority): if the configured env var is present, prefer it
+  const envKeyNameFirst = cfg.openai.api_key_env;
+  const envValueFirst = env[envKeyNameFirst]?.trim();
+  if (envValueFirst) {
+    return {
+      state: "healthy",
+      source: "env_api_key",
+      detail: `Using ${envKeyNameFirst} environment variable`,
+      apiKey: envValueFirst,
+      metadata: { path: null, lastRefresh: null, fallbackReason: null }
+    };
+  }
+
   let codexAttempted = false;
   let codexError: Error | null = null;
 
@@ -88,23 +101,17 @@ export async function resolveOpenAICredentials(cfg: Config, opts: ResolveOptions
     }
   }
 
+  // 2) ENV fallback if Codex failed (kept for completeness)
   const envKeyName = cfg.openai.api_key_env;
   const envValue = env[envKeyName]?.trim();
   if (envValue) {
-    const state = codexAttempted && codexError ? "degraded" : "healthy";
-    const detail = codexAttempted && codexError
-      ? `Using ${envKeyName} after Codex reuse failed: ${codexError.message}`
-      : `Using ${envKeyName} environment variable`;
+    const detail = `Using ${envKeyName} after Codex reuse failed: ${codexError?.message ?? 'unknown error'}`;
     return {
-      state,
+      state: "degraded",
       source: "env_api_key",
       detail,
       apiKey: envValue,
-      metadata: {
-        path: null,
-        lastRefresh: null,
-        fallbackReason: codexError?.message ?? null
-      }
+      metadata: { path: null, lastRefresh: null, fallbackReason: codexError?.message ?? null }
     };
   }
 

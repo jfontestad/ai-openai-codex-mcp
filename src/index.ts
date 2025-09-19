@@ -138,6 +138,11 @@ async function main() {
       logInfo(`cwd=${process.cwd()}`);
       logInfo(`node=${process.version}`);
     }
+    // Always emit a minimal readiness hint to stderr so users who start the
+    // binary manually understand that stdio mode is waiting for a client.
+    if (!dbgEnabled) {
+      logInfo(`stdio mode ready: waiting for MCP client on stdin (send initialize). Set DEBUG=1 for verbose logs.`);
+    }
     if (showConfigPrinted) {
       logInfo(`show-config printed to stderr (continuing)`);
     }
