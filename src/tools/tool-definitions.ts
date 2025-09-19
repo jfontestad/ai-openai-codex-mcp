@@ -49,4 +49,52 @@ export const TOOL_DEFINITIONS = {
       required: ["query"]
     }
   }
+  ,
+  codex_exec: {
+    name: "codex_exec",
+    description: "Run a non-interactive Codex session via CLI (no API key required).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: { type: "string" },
+        model: { type: "string" },
+        profile: { type: "string" },
+        cwd: { type: "string" },
+        sandbox: { enum: ["read-only","workspace-write","danger-full-access"] },
+        full_auto: { type: "boolean" },
+        skip_git_repo_check: { type: "boolean" },
+        approval_policy: { enum: ["untrusted","on-failure","on-request","never"] },
+        json_mode: { type: "boolean" },
+        timeout_ms: { type: "number" },
+        config: { type: "object", additionalProperties: true }
+      },
+      required: ["prompt"]
+    }
+  }
+  ,
+  codex_ai: {
+    name: "codex_ai",
+    description: "Persona-driven Codex execution with tuned instructions (keyless, single-turn).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: { type: "string" },
+        persona: { type: "string" },
+        thinking: { enum: ["low","medium","high"] },
+        model: { type: "string" },
+        profile: { type: "string" },
+        max_output_tokens: { type: "number" },
+        temperature: { type: "number" },
+        enabled_tools: { type: "array", items: { type: "string" } },
+        conversation_id: { type: "string" },
+        sandbox: { enum: ["read-only","workspace-write","danger-full-access"] },
+        approval_policy: { enum: ["untrusted","on-failure","on-request","never"] },
+        cwd: { type: "string" },
+        timeout_ms: { type: "number" },
+        json_mode: { type: "boolean" },
+        skip_git_repo_check: { type: "boolean" }
+      },
+      required: ["prompt"]
+    }
+  }
 } as const;

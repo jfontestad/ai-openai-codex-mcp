@@ -16,6 +16,20 @@ export async function createClient(cfg: Config) {
 
   if (isDebug()) {
     console.error(`[codex-auth] using source=${resolution.source} state=${resolution.state}`);
+    // Proactive heads-up: JWT tokens from ChatGPT login often lack Responses scopes.
+    try {
+      if (resolution.source !== 'env_api_key' && resolution.apiKey.includes('.')) {
+        const payloadPart = resolution.apiKey.split('.')[1] || '';
+        const padded = payloadPart.padEnd(payloadPart.length + (4 - (payloadPart.length % 4)) % 4, '=');
+        const json = Buffer.from(padded.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+        const payload = JSON.parse(json);
+        const scopes: string[] = Array.isArray(payload.scp) ? payload.scp : (typeof payload.scope === 'string' ? payload.scope.split(' ') : []);
+        const hasResponses = scopes.some(s => s.startsWith('api.responses'));
+        if (!hasResponses) {
+          console.error('[codex-auth] warning: token appears to lack api.responses.* scopes; the Responses API may return 401. Prefer OPENAI_API_KEY or a token with Responses scopes.');
+        }
+      }
+    } catch {}
   }
 
   const client = new OpenAI({

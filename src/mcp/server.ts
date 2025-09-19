@@ -3,9 +3,12 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { callAnswer } from "../tools/answer.js";
+import { callCodexExec } from "../tools/codex-exec.js";
+import { callCodexAI } from "../tools/codex-ai.js";
 import { TOOL_DEFINITIONS } from "../tools/tool-definitions.js";
 import type { Config } from "../config/defaults.js";
 import { isDebug } from "../debug/state.js";
+import { appendEvent as hxAppend } from "../history/store.js";
 
 type JsonRpc = {
   jsonrpc?: "2.0";
@@ -75,7 +78,13 @@ export function startServer(cfg: Config) {
     }
 
     if (msg.method === "tools/list" && msg.id !== undefined) {
-      const tools = Object.values(TOOL_DEFINITIONS);
+      let tools = Object.values(TOOL_DEFINITIONS);
+      try {
+        const expose = (cfg as any)?.server?.expose_answer_tools !== false;
+        if (!expose) {
+          tools = tools.filter((t: any) => !['answer','answer_detailed','answer_quick'].includes(t?.name));
+        }
+      } catch {}
       if (isDebug()) logInfo(`tools/list -> ${tools.length} tools`);
       sendResult(msg.id, { tools });
       return;
@@ -90,13 +99,69 @@ export function startServer(cfg: Config) {
           logInfo(`tools/call name=${name} argsKeys=[${keys.join(',')}] queryLen=${qlen ?? '-'}`);
         } catch {}
       }
-      // Use directly as profile name
       if (name && name in TOOL_DEFINITIONS) {
         try {
           // Prepare AbortController for each request (interrupted by cancellation notification)
           const entry = { controller: new AbortController(), cancelled: false };
           inflight.set(msg.id, entry);
-          const out = await callAnswer(args, cfg, name, entry.controller.signal);  // Profile name + cancel propagation
+          let out: any;
+          const expose = (cfg as any)?.server?.expose_answer_tools !== false;
+          if ((name === 'answer' || name === 'answer_detailed' || name === 'answer_quick') && expose) {
+            out = await callAnswer(args, cfg, name, entry.controller.signal);
+          } else if (name === 'codex_exec') {
+            const conv = (args?.conversation_id || args?.conversationId || null) as string | null;
+            const d = (cfg as any).codex_defaults || {};
+            const merged = {
+              cwd: process.cwd(),
+              sandbox: d.sandbox ?? 'read-only',
+              approval_policy: d.approval_policy ?? 'on-failure',
+              timeout_ms: d.timeout_ms ?? 15_000,
+              json_mode: (d.json_mode ?? true),
+              skip_git_repo_check: (d.skip_git_repo_check ?? true),
+              ...args
+            };
+            const onEvent = (ev: any) => {
+              try {
+                const suppressFinal = String(process.env.CODEX_STREAM_SUPPRESS_FINAL || '').toLowerCase();
+                const noFinal = (suppressFinal === '1' || suppressFinal === 'true' || suppressFinal === 'yes');
+                const isFinal = ev?.type === 'agent_message';
+                if (ev?.type === 'agent_message_delta' || ev?.type === 'token_count' || (!noFinal && isFinal)) {
+                  writeMessage({ jsonrpc: '2.0', method: 'notifications/progress', params: { requestId: msg.id, tool: name, event: ev } });
+                  writeMessage({ jsonrpc: '2.0', method: 'codex/event', params: { requestId: msg.id, tool: name, event: ev } });
+                }
+                if (conv) hxAppend(conv, { tool: name, event: ev });
+              } catch {}
+            };
+            out = await callCodexExec(merged as any, entry.controller.signal, onEvent);
+          } else if (name === 'codex_ai') {
+            const conv = (args?.conversation_id || args?.conversationId || null) as string | null;
+            const d = (cfg as any).codex_defaults || {};
+            const merged = {
+              cwd: process.cwd(),
+              sandbox: d.sandbox ?? 'read-only',
+              approval_policy: d.approval_policy ?? 'on-failure',
+              timeout_ms: d.timeout_ms ?? 900_000,
+              json_mode: (d.json_mode ?? true),
+              skip_git_repo_check: (d.skip_git_repo_check ?? true),
+              ...args
+            };
+            const onEvent = (ev: any) => {
+              try {
+                const suppressFinal = String(process.env.CODEX_STREAM_SUPPRESS_FINAL || '').toLowerCase();
+                const noFinal = (suppressFinal === '1' || suppressFinal === 'true' || suppressFinal === 'yes');
+                const isFinal = ev?.type === 'agent_message';
+                if (ev?.type === 'agent_message_delta' || ev?.type === 'token_count' || (!noFinal && isFinal)) {
+                  writeMessage({ jsonrpc: '2.0', method: 'notifications/progress', params: { requestId: msg.id, tool: name, event: ev } });
+                  writeMessage({ jsonrpc: '2.0', method: 'codex/event', params: { requestId: msg.id, tool: name, event: ev } });
+                }
+                if (conv) hxAppend(conv, { tool: name, event: ev });
+              } catch {}
+            };
+            out = await callCodexAI(merged as any, entry.controller.signal, onEvent);
+            if (conv) hxAppend(conv, { tool: name, final: out });
+          } else {
+            throw new Error(`unsupported tool: ${name}`);
+          }
           // Suppress response if cancelled
           const cur = inflight.get(msg.id) || entry;
           const abortedNow = cur.cancelled || cur.controller.signal.aborted;

@@ -47,12 +47,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git"
+    "url": "git+https://github.com/jfontestad/openai-responses-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues"
+    "url": "https://github.com/jfontestad/openai-responses-mcp/issues"
   },
-  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme",
+  "homepage": "https://github.com/jfontestad/openai-responses-mcp#readme",
   "keywords": [
     "openai",
     "responses-api",
