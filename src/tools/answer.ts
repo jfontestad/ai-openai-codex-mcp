@@ -128,18 +128,5 @@ export async function callAnswer(input: AnswerInput, cfg: Config, profileName?: 
   };
 }
 
-export const answerToolDef = {
-  name: "answer",
-  description: "Search the web when needed and return answers with evidence and citations",
-  inputSchema: {
-    type: "object",
-    properties: {
-      query: { type: "string" },
-      recency_days: { type: "number" },
-      max_results: { type: "number" },
-      domains: { type: "array", items: { type: "string" } },
-      style: { enum: ["summary","bullets","citations-only"] }
-    },
-    required: ["query"]
-  }
-};
+// Note: Tool schema is centralized in src/tools/tool-definitions.ts.
+// This file intentionally exports only the runtime implementation.

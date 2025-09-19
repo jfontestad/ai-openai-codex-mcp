@@ -58,6 +58,7 @@ export function startServer(cfg: Config) {
       if (pol?.source === 'file') logInfo(`policy: source=file path=${pol.path ?? ''} merge=${pol.merge ?? 'replace'}`);
     }
   } catch {}
+  const historyEnabled = !!((cfg as any)?.server?.history?.enabled);
   readMessages(async (raw: any) => {
     const msg = raw as JsonRpc;
     if (isDebug()) {
@@ -129,7 +130,7 @@ export function startServer(cfg: Config) {
                   writeMessage({ jsonrpc: '2.0', method: 'notifications/progress', params: { requestId: msg.id, tool: name, event: ev } });
                   writeMessage({ jsonrpc: '2.0', method: 'codex/event', params: { requestId: msg.id, tool: name, event: ev } });
                 }
-                if (conv) hxAppend(conv, { tool: name, event: ev });
+                if (conv && historyEnabled) hxAppend(conv, { tool: name, event: ev });
               } catch {}
             };
             out = await callCodexExec(merged as any, entry.controller.signal, onEvent);
@@ -154,11 +155,11 @@ export function startServer(cfg: Config) {
                   writeMessage({ jsonrpc: '2.0', method: 'notifications/progress', params: { requestId: msg.id, tool: name, event: ev } });
                   writeMessage({ jsonrpc: '2.0', method: 'codex/event', params: { requestId: msg.id, tool: name, event: ev } });
                 }
-                if (conv) hxAppend(conv, { tool: name, event: ev });
+                if (conv && historyEnabled) hxAppend(conv, { tool: name, event: ev });
               } catch {}
             };
             out = await callCodexAI(merged as any, entry.controller.signal, onEvent);
-            if (conv) hxAppend(conv, { tool: name, final: out });
+            if (conv && historyEnabled) hxAppend(conv, { tool: name, final: out });
           } else {
             throw new Error(`unsupported tool: ${name}`);
           }

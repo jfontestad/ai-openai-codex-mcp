@@ -493,8 +493,8 @@ This server honors MCP cancellation notifications.
 
 ---
 
-## 15. CI/CD Specification (GitHub Actions)
-This section summarizes the operational rules captured in docs/release.md (phases B/C). Implementations must follow them exactly.
+## 15. CI (Local/Private)
+This project is local/private. Publishing workflows are removed. Optionally keep a basic CI for build + tests.
 
 ### 15.1 Branch/Tag Operations
 - `main`: release branch.
@@ -511,23 +511,14 @@ This section summarizes the operational rules captured in docs/release.md (phase
     2) `actions/setup-node@v4` (`node-version: 20`, `cache: npm`)
     3) `npm ci`
     4) `npm run build:clean`
-    5) `npm pack --dry-run` (inspect bundled files)
-    6) Smoke tests:
+    5) Smoke tests:
        - Default: `npm run mcp:smoke:ldjson` (no API key required)
        - Optional: `npm run mcp:smoke` (requires `OPENAI_API_KEY`)
 
-- `release.yml` (tag push automation with Trusted Publishing)
-  - Trigger: `push` with `tags: ["v*"]`
-  - Permissions: `permissions: { contents: write, id-token: write }`
-  - Node: `20.x`
-  - Trusted Publishing / OIDC flow:
-    - Register the repository with npm Trusted Publishers (one-time setup).
-    - GitHub Actions executes `npm publish --provenance --access public` (no token needed).
-  - Optional: generate GitHub Release notes.
+  (Removed) `release.yml` and any publishing automation — not applicable.
 
 ### 15.3 Secrets / Environment Variables
 - `OPENAI_API_KEY` (optional in ci.yml): required for `npm run mcp:smoke`; omit to run only `mcp:smoke:ldjson`.
-- Trusted Publishing does not require `NPM_TOKEN`; configure npm once.
 
 ### 15.4 Reference YAML (Outline)
 The snippets below illustrate the expected workflows. Mirror them without introducing additional steps.
@@ -553,103 +544,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:clean
-      - run: npm pack --dry-run
       - run: npm run mcp:smoke:ldjson
       - if: env.OPENAI_API_KEY != ''
         run: npm run mcp:smoke
 ```
 
-release.yml (outline - Trusted Publishing):
-```yaml
-name: Release
-on:
-  push:
-    tags: ["v*"]
-permissions:
-  contents: write
-  id-token: write
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build:clean
-      - run: npm publish --provenance --access public
-```
+<!-- Publishing workflow removed -->
 
-### 15.5 Published Artifacts and Policy
-- Publish only the minimal set listed in `package.json.files` (`build/`, `config/*.example`, `README.md`, `LICENSE`, `package.json`).
-- Keep `prepublishOnly` as `npm run build` (local publish behaves the same).
-- After release, verify with `npx openai-responses-mcp@latest --stdio`.
+### 15.5 Distribution
+Local-only; do not publish artifacts.
 
-### 15.6 Operational Flow (Confirmed)
-1) feature/* -> Pull Request (runs `ci.yml`).
-2) Merge into `main`, bump `package.json` via SemVer.
-3) `git tag vX.Y.Z && git push --tags` (runs `release.yml` -> npm publish via Trusted Publishing).
-4) Confirm the Actions run succeeded and re-run the README `npx` example.
-
-Note: Adding `repository`, `homepage`, and `bugs` fields to `package.json` improves the npm page, but coordinate separately before implementing.
+### 15.6 Operational Flow
+Use standard PRs for code review; no tagging/publishing flows.
 
 ---
 
-## 16. npm Distribution Metadata (package.json Publication Spec)
-This section defines required and recommended `package.json` fields for npm publication. Verify compliance with this spec before releasing.
-
-### 16.1 Required Fields
-- name: `openai-responses-mcp`
-- version: Semantic Versioning (current `0.4.x`)
-- description: Use the following text (don't include stage expressions like "Step N:")
-  - `Lightweight MCP server (Responses API core). OpenAI integration + web_search.`
-- type: `module`
-- bin: `{ "openai-responses-mcp": "build/index.js" }`
-- files: `["build","config/config.yaml.example","config/policy.md.example","README.md","LICENSE"]`
-- scripts.prepublishOnly: `npm run build`
-- engines.node: `>=20`
-- license: `MIT`
-
-### 16.2 Recommended Metadata (npm Page Usability Enhancement)
-- repository: `{ "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" }`
-- homepage: `https://github.com/uchimanajet7/openai-responses-mcp#readme`
-- bugs: `{ "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }`
-- keywords: Supply relevant terms (for example `"mcp","openai","responses","cli"`)
-- author: Provide appropriate attribution
-
-### 16.3 Example `package.json` for Publication (Excerpt)
-```json
-{
-  "name": "openai-responses-mcp",
-  "version": "0.4.1",
-  "description": "Lightweight MCP server (Responses API core). OpenAI integration + web_search.",
-  "type": "module",
-  "bin": { "openai-responses-mcp": "build/index.js" },
-  "files": [
-    "build",
-    "config/config.yaml.example",
-    "config/policy.md.example",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": { "prepublishOnly": "npm run build" },
-  "engines": { "node": ">=20" },
-  "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/uchimanajet7/openai-responses-mcp.git" },
-  "homepage": "https://github.com/uchimanajet7/openai-responses-mcp#readme",
-  "bugs": { "url": "https://github.com/uchimanajet7/openai-responses-mcp/issues" }
-}
-```
-
-### 16.4 Application and Verification Flow
-1) Identify differences from spec (confirm no "Step N:" remains in `description`).
-2) Ensure `repository`, `homepage`, and `bugs` fields match the URLs defined in this spec.
-3) Verify included items and metadata with `npm run build:clean && npm pack --dry-run`.
-4) Document reasons and impact in `docs/changelog.md` so users can track changes.
-
-Note: This spec defines minimum requirements for public metadata; dependency and script details follow higher sections (functional spec).
+## 16. (Removed) npm Distribution Metadata
+Publication guidance is not applicable; this repository is local-only.
 
 ---
 
@@ -692,5 +603,3 @@ Note: This spec defines minimum requirements for public metadata; dependency and
   ```json
   {"code":-32050,"message":"openai responses failed","data":{"retries":3}}
   ```
-
-

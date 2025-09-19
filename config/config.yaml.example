@@ -99,3 +99,8 @@ server:
   debug_file: null
   # Display summary of effective settings to stderr on startup
   show_config_on_start: false
+  # Suppress non-debug logs (recommended for local/personal use)
+  quiet: true
+  # Never write local interaction history by default
+  history:
+    enabled: false

@@ -6,6 +6,16 @@ build/
 dist/
 *.tgz
 
+# local history & backups
+.chat-hx/
+.backup/
+
+# local analysis/artifacts
+effective.json
+language-analysis-report.md
+translation-*.md
+research/
+
 # local env & secrets
 .env
 config/config.yaml

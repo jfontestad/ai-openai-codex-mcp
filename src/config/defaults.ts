@@ -39,7 +39,15 @@ export interface Config {
     };
   };
   search: { defaults: { recency_days: number; max_results: number; domains: string[] } };
-  server: { transport: Transport; debug: boolean; debug_file: string | null; show_config_on_start: boolean; expose_answer_tools: boolean };
+  server: {
+    transport: Transport;
+    debug: boolean;
+    debug_file: string | null;
+    show_config_on_start: boolean;
+    expose_answer_tools: boolean;
+    quiet: boolean;
+    history?: { enabled: boolean; dir?: string | null };
+  };
   codex_defaults: {
     sandbox: 'read-only' | 'workspace-write' | 'danger-full-access';
     approval_policy: 'untrusted' | 'on-failure' | 'on-request' | 'never';
@@ -79,7 +87,15 @@ export const defaults: Config = {
     system: { source: "builtin", merge: "replace" }
   },
   search: { defaults: { recency_days: 60, max_results: 5, domains: [] } },
-  server: { transport: "stdio", debug: false, debug_file: null, show_config_on_start: false, expose_answer_tools: true },
+  server: {
+    transport: "stdio",
+    debug: false,
+    debug_file: null,
+    show_config_on_start: false,
+    expose_answer_tools: true,
+    quiet: true,
+    history: { enabled: false, dir: null }
+  },
   codex_defaults: {
     sandbox: 'read-only',
     approval_policy: 'on-failure',

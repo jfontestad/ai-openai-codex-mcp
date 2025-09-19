@@ -9,15 +9,14 @@ This folder contains the complete official documentation set for **openai-respon
 
 ## 1. Quick Start
 ```bash
-# Dependencies & build (reproducibility focused)
-npm ci
-npm run build
+# Dependencies & build (local only)
+npm ci && npm run build
 
-# Check effective configuration (JSON output to stderr)
-npx openai-responses-mcp --show-config 2> effective-config.json
+# Check effective configuration (JSON to stderr)
+node build/index.js --show-config 2> effective-config.json
 
 # Minimal startup (MCP stdio)
-npx openai-responses-mcp --stdio
+node build/index.js --stdio
 
 # Smoke test (connectivity)
 npm run mcp:smoke:ldjson

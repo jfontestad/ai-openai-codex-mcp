@@ -4,8 +4,10 @@
   <p><a href="./README.md">Japanese</a></p>
 </div>
 
-A lightweight MCP server that uses the OpenAI Responses API as its inference core.  
+A lightweight MCP server that uses the OpenAI Responses API as its inference core.
 `web_search` is always permitted; whether to actually search is decided autonomously by the model. It is used over stdio from MCP clients such as Claude Code and Claude Desktop.
+
+Important: This is a local/personal repository. It is not intended for registry publishing.
 
 Important: The canonical specification is `docs/spec.md`. See that file for details.
 
@@ -41,13 +43,17 @@ Important: The canonical specification is `docs/spec.md`. See that file for deta
 - npm (bundled with Node)
 - OpenAI API key (provided via environment variable) **or** Codex CLI authenticated via `codex login`
 
+Security/Privacy defaults:
+- No local interaction history is written (`server.history.enabled=false`).
+- Non-debug logging is suppressed by default (`server.quiet=true`).
+
 ---
 
-## Minimal Setup (boot with only required settings)
+## Minimal Setup (local only)
 - Requirement: either Codex CLI credentials (`codex login`) or the `OPENAI_API_KEY` environment variable
-- Example startup (npx):
-  - `npx openai-responses-mcp@latest --stdio` (reuses Codex CLI auth when present)
-  - `export OPENAI_API_KEY="sk-..." && npx openai-responses-mcp@latest --stdio`
+- Build locally, then start stdio server:
+  - `npm ci && npm run build`
+  - `node build/index.js --stdio`
 
 You can add YAML later (default path: macOS/Linux `~/.config/openai-responses-mcp/config.yaml`, Windows `%APPDATA%\\openai-responses-mcp\\config.yaml`).
 
@@ -56,15 +62,15 @@ You can add YAML later (default path: macOS/Linux `~/.config/openai-responses-mc
 ## For Users (use as an MCP)
 Use this from an MCP client.
 
-### 1) Register with Claude Code
+### 1) Register with Claude Code (local path)
 - Add the following entry to `~/.claude.json`:
 
 ```json
 {
   "mcpServers": {
     "openai-responses": {
-      "command": "npx",
-      "args": ["openai-responses-mcp@latest", "--stdio"],
+      "command": "node",
+      "args": ["/ABS/PATH/openai-responses-mcp/build/index.js", "--stdio"],
       "env": { "OPENAI_API_KEY": "sk-..." }
     }
   }
@@ -74,7 +80,7 @@ Use this from an MCP client.
 - Or run via the Claude Code CLI:
 
 ```sh
-claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- npx openai-responses-mcp@latest --stdio
+claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- node /ABS/PATH/openai-responses-mcp/build/index.js --stdio
 ```
 
 ### 2) Register with OpenAI Codex
@@ -83,7 +89,7 @@ claude mcp add -s user -t stdio openai-responses -e OPENAI_API_KEY=sk-xxxx -- np
 ```toml
 [mcp_servers.openai-responses]
 command = "npx"
-args = ["-y", "openai-responses-mcp@latest", "--stdio"]
+args = ["/ABS/PATH/openai-responses-mcp/build/index.js", "--stdio"]
 # env is optional; Codex CLI auth.json is reused automatically when present
 ```
 
@@ -110,10 +116,10 @@ When you encounter issues or implementation difficulties during development:
    - After resolving the problem, record steps and methods to enable quick response to recurrences  
 ```
 
-### 4) Run immediately with npx
+### 4) Run locally
 ```bash
-export OPENAI_API_KEY="sk-..." 
-npx openai-responses-mcp@latest --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
+export OPENAI_API_KEY="sk-..."
+node /ABS/PATH/openai-responses-mcp/build/index.js --stdio --debug ./_debug.log --config ~/.config/openai-responses-mcp/config.yaml
 ```
 
 ### 5) Configuration (YAML optional)
@@ -227,13 +233,8 @@ npm run mcp:smoke:ldjson   # NDJSON-compatible connectivity check
 
 ---
 
-## For Maintainers (distribution)
-
-### Check and publish the npm package
-```bash
-npm pack --dry-run    # Verify included files (only build/ and README/LICENSE/samples)
-npm publish           # Publish (unscoped)
-```
+## Notes for Maintainers
+- This repository is private/local. Do not publish to any registry.
 
 ---
 
